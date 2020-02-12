@@ -1,0 +1,131 @@
+QWidget#BachDuet{
+    /* background-color: rgb(255, 235, 170); */
+    /* font: 57 13pt "Futura"; */
+    /* background : transparent; */
+}
+QWidget#ModeWindow{
+    background-color: rgb(255, 171, 15);
+    /* background: transparent; */
+    
+    /* font: 57 13pt "Futura"; */
+}
+
+QGroupBox { 
+    color: green; 
+    font: bold;
+}
+
+/* QTabWidget {
+   border: 10px solid rgb(212, 6, 6);
+} */
+QTabBar::tab:selected {
+    /* background: rgb(197, 184, 184); */
+    color: green; 
+    font: bold;
+}
+QLCDNumber {
+    background-color:#4a85c4;
+    font-weight: bold;
+    font-size: 15pt;
+    /* margin-left: 10px;  */
+}
+
+QLabel#keyIndicator{
+    /* background-color:#4a85c4;  */
+    font-weight: bold;
+    font-size: 15pt;
+    margin-left: 10px; 
+    border-radius: 25px; 
+    background: #4a85c4; 
+    color: rgb(255, 255, 255);
+}
+
+QProgressBar{
+    background: #74c8ff;
+    color: #0a9dff;
+    border-style: outset;
+    border-width: 2px;
+    border-color: #74c8ff;
+    border-radius: 7px;
+    text-align: left;
+}
+
+QPushButton#hh{
+    background-color: rgb(36, 28, 28);
+    border-style: outset;
+    border-width: 2px;
+    border-radius: 10px;
+    /* border-color: rgb(20, 134, 45); */
+    color: rgb(255, 247, 180);
+    /* color:  rgb(255, 171, 15); */
+    /* background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,stop: 0 #f6f7fa, stop: 1 #dadbde); */
+    font: bold 15px;
+    /*min-width: 25em;
+    min-height: 5em;*/
+    max-width: 300px;
+    max-height: 100px; 
+    min-width: 300px;
+    min-height: 100px;
+    padding: 6px; 
+}
+QPushButton#mm{
+    background-color: rgb(36, 28, 28);
+    border-style: outset;
+    border-width: 2px;
+    border-radius: 10px;
+    /* border-color: rgb(20, 134, 45); */
+    color: rgb(255, 247, 180);
+    /* color:  rgb(255, 171, 15); */
+    /* background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,stop: 0 #f6f7fa, stop: 1 #dadbde); */
+    font: bold 15px;
+    /*min-width: 25em;
+    min-height: 5em;*/
+    max-width: 300px;
+    max-height: 100px; 
+    min-width: 300px;
+    min-height: 100px;
+    padding: 6px; 
+}
+QPushButton#hm{
+    background-color: rgb(36, 28, 28);
+    border-style: outset;
+    border-width: 2px;
+    border-radius: 10px;
+    /* border-color: rgb(20, 134, 45); */
+    color: rgb(255, 247, 180);
+    /* color:  rgb(255, 171, 15); */
+    /* background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,stop: 0 #f6f7fa, stop: 1 #dadbde); */
+    font: bold 15px;
+    /*min-width: 25em;
+    min-height: 5em;*/
+    max-width: 300px;
+    max-height: 100px; 
+    min-width: 300px;
+    min-height: 100px;
+    padding: 6px; 
+}
+QLabel#Human{
+    /*background-color:  rgb(36, 28, 28); */
+    font: bold;
+    color: green;
+}
+QLabel#Machine{
+    /*background-color:  rgb(36, 28, 28); */
+    font: bold;
+    color: green;
+}
+QPushButton#refreshMidi{
+    background-color:  rgb(36, 28, 28);
+    border-style: outset;
+    /* border-width: 2px; */
+    /* border-radius: 10px; */
+    /* border-color: rgb(20, 134, 45);
+    color: rgb(255, 247, 180);  */
+    /* background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,stop: 0 #f6f7fa, stop: 1 #dadbde); */
+    /* font: bold 25px; */
+    max-width: 20px;
+    max-height: 20px; 
+    min-width: 20px;
+    min-height: 20px;
+    /* padding: 6px; */
+}

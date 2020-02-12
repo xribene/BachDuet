@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="8.7063799mm"
+   height="7.2842398mm"
+   viewBox="0 0 8.7063799 7.2842398"
+   version="1.1"
+   id="svg8"
+   inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
+   sodipodi:docname="noteFilled.svg">
+  <defs
+     id="defs2" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.35"
+     inkscape:cx="-80.689839"
+     inkscape:cy="-214.80594"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="1920"
+     inkscape:window-height="1017"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata5">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-127.18252,-84.715023)">
+    <path
+       inkscape:connector-curvature="0"
+       class="Note"
+       d="m 132.99489,84.715023 c 0.82682,0 1.52559,0.21484 2.09603,0.64479 0.53208,0.46593 0.79798,1.05145 0.79798,1.75709 0,1.18772 -0.61039,2.29844 -1.83144,3.33217 -1.24011,1.03346 -2.56726,1.55019 -3.98119,1.55019 -0.82682,0 -1.524,-0.21511 -2.0918,-0.64505 -0.53472,-0.46567 -0.80195,-1.05146 -0.80195,-1.75684 0,-1.18798 0.61992,-2.2987 1.86029,-3.33216 1.20703,-1.03346 2.52465,-1.55019 3.95208,-1.55019"
+       id="path9822"
+       style="stroke-width:0.26458332" />
+  </g>
+</svg>

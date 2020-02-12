@@ -1,0 +1,93 @@
+{
+    "default":{
+        "metronome" : {
+            "name": "metronome",
+            "BPM" : 85,
+            "pitch1" : 76,
+            "pitch2" : 77,
+            "model": null,
+            "queueEvents":null,
+            "directMon":null,
+            "internalKeyboard":null,
+            "temperature":null,
+            "volume" : 127,
+            "midiChanIn" : null,
+            "midiChanOut" : 10,
+            "defaultMidiOut" : "Omni",
+            "defaultMidiIn" : null
+        },
+        "human" : {
+            "name" : "Human1",
+            "BPM" : null,
+            "pitch1" : null,
+            "pitch2" : null,
+            "model": null,
+            "queueEvents":false,
+            "directMon":true,
+            "internalKeyboard":true,
+            "temperature":null,
+            "volume" : 127,
+            "midiChanIn" : 1,
+            "midiChanOut":1,
+            "defaultMidiOut" : "Omni",
+            "defaultMidiIn" : "Keystation"
+        },
+        "human2" : {
+            "name" : "Human2",
+            "BPM" : null,
+            "pitch1" : null,
+            "pitch2" : null,
+            "model": null,
+            "queueEvents":false,
+            "directMon":true,
+            "internalKeyboard":true,
+            "temperature":null,
+            "volume" : 127,
+            "midiChanIn" : 2,
+            "midiChanOut":2,
+            "defaultMidiOut" : "Omni",
+            "defaultMidiIn" : "eee"
+        },
+        "machine" : {
+            "name": "Machine1",
+            "BPM" : null,
+            "pitch1" : null,
+            "pitch2" : null,
+            "model":"LSTM",
+            "queueEvents":null,
+            "directMon":null,
+            "internalKeyboard":null,
+            "temperature":0.5,
+            "volume" : 127,
+            "midiChanIn": null,
+            "midiChanOut":2,
+            "defaultMidiOut" : "Omni",
+            "defaultMidiIn" : null
+        },
+        "machine2" : {
+            "name": "Machine2",
+            "BPM" : null,
+            "pitch1" : null,
+            "pitch2" : null,
+            "model":"LSTM",
+            "queueEvents":null,
+            "directMon":null,
+            "internalKeyboard":null,
+            "temperature":0.5,
+            "volume" : 127,
+            "midiChanIn": null,
+            "midiChanOut":3,
+            "defaultMidiOut" : "Omni",
+            "defaultMidiIn" : null
+        }
+    },
+    "timeSignature" : "4/4",
+    "gui" : {
+        "keyPos" : [ 18, 53, 96, 138, 170,205,240,275,310,340,375,405, 
+            440,472,505,540,572,605,640,675,710,742,777,810,842,872,908,940,975,1010,
+            1045,1080,1115,1145,1180,1212,1248,1277,1312,1346, 1380, 1415, 1450, 1485,
+            1521, 1551, 1586, 1616, 1650, 1682, 1714, 1748, 1783, 1820, 1855, 1893, 1921,
+            1955, 1990, 2022, 2053, 2083, 2119, 2154]
+    }, 
+    "storagePath" : "bachDuetStorage"
+ }
