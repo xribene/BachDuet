@@ -166,7 +166,7 @@ class BachDuet(QWidget):
         # a json file using the Params() class from utils.py
         self.config = Params(appctxt.get_resource("bachDuet.json"))
         self.cwd = Path.cwd()
-        self.storagePath = self.cwd.parent / self.config.storagePath
+        self.storagePath = self.cwd / self.config.storagePath
         self.appctxt = appctxt
         self.ctrlPressed = False
         
@@ -302,13 +302,20 @@ class BachDuet(QWidget):
     def getSubjectId(self, name):
         # subjects.txt contains all users and their unique ID
         subjectsFilePath = self.storagePath / 'subjects.txt' 
-        found = False
-        with open(subjectsFilePath,'r+') as f:
-            lines = f.readlines()
-            for i, line in enumerate(lines) : 
-                if name in line:
-                    found = True
-                    subjectId = int(line.strip().split(' - ')[0])
+        self.storagePath.mkdir(parents=True, exist_ok=True)
+        if Path(subjectsFilePath).exists() == True:
+            readMode = 'r+'
+        else: 
+            readMode = 'w'
+        found = False 
+        i=-1       
+        with open(subjectsFilePath, readMode) as f:
+            if readMode == 'r+':
+                lines = f.readlines()
+                for i, line in enumerate(lines) : 
+                    if name in line:
+                        found = True
+                        subjectId = int(line.strip().split(' - ')[0])
             # if new user, add them in subjects.txt and assign a new ID
             if not found : 
                 subjectId = i+2
