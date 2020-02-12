@@ -23,62 +23,6 @@ from queue import Queue
 from collections import deque
 import sys
 
-class AudioRecorder(QObject):
-    def __init__(self, currentAudioFrame, parent=None, chunk = 4096, channels = 1, rate = 44100, output_name = "outputClass.wav" ):
-        super(AudioRecorder, self).__init__(parent)
-        self.CHUNK = chunk
-        self.FORMAT = pyaudio.paInt16
-        self.CHANNELS = channels
-        self.RATE = rate
-        self.WAVE_OUTPUT_FILENAME = output_name
-        self.currentAudioFrame = currentAudioFrame
-        
-        self.stopped = True
-        print("AudioRecorder INIT")
-        
-    def openStream(self):
-        self.p = pyaudio.PyAudio()
-        self.stream = self.p.open(format=self.FORMAT,
-                         input_device_index=0,
-                         channels=self.CHANNELS,
-                         rate=self.RATE,
-                         input=True,
-                         frames_per_buffer=self.CHUNK)
-        self.frames = []
-        self.stopped = False
-        #self.startTimer()
-    def startTimer(self):
-        self.timer = QTimer()
-        self.timer.timeout.connect(self.recordara)
-        self.timer.start(int(self.CHUNK*1000/self.RATE))
-        #self.timer.start(100)
-    @pyqtSlot(str)
-    def stopStartRecorder(self, inputSource):
-        if inputSource == 'Audio Mic':
-            self.openStream()
-            
-        elif inputSource == 'Midi Keyboard':
-            self.stopit()
-    def recordara(self):
-        print("recording")
-        data = self.stream.read(self.CHUNK)
-        self.currentAudioFrame.put(data)
-        self.frames.append(data)
-    def stopit(self):
-        if not self.stopped:
-            self.timer.stop()
-            self.stream.stop_stream()
-            self.stream.close()
-            self.p.terminate()
-            self.saveRecording()
-        print("stop recording")
-    def saveRecording(self):
-        wf = wave.open(self.WAVE_OUTPUT_FILENAME, 'wb')
-        wf.setnchannels(self.CHANNELS)
-        wf.setsampwidth(self.p.get_sample_size(self.FORMAT))
-        wf.setframerate(self.RATE)
-        wf.writeframes(b''.join(self.frames))
-        wf.close()
 class YinEstimator(QObject):
     def __init__(self, currentAudioFrame, currentAudioNote, parent=None, chunk = 4096, rate = 44100,
                 f0_max=1000, f0_min=100, harmoThresh=0.15, medianOrder=5):
@@ -116,7 +60,7 @@ class YinEstimator(QObject):
             self.pitchMedianBuffer.append(pitch)
             actualNote = np.median(list(self.pitchMedianBuffer))
             noteMidi, noteLabel = self.quantizePitch([actualNote], self.centroids, self.codeBookMidi, self.codeBookLabel)
-            #print(f"Note = {noteLabel[0]}  Hz = {pitch}  midi = {noteMidi[0]}  ap_pwr = {harmonic_rate}")
+            # print(f"Note = {noteLabel[0]}  Hz = {pitch}  midi = {noteMidi[0]}  ap_pwr = {harmonic_rate}")
             self.currentAudioNote.put(noteMidi[0])
     def differenceFunction(self, x, N, tau_max):
         #equation (6) in [1]    
@@ -199,6 +143,75 @@ class Audio2MidiEvents(QObject):
                     self.currentAudio2MidiEvent.put(['noteOn', 144, data])#,self.newNote))
                     print(['noteOn', 144, data])
                 self.lastNote = data
+
+
+class AudioRecorder(QObject):
+    def __init__(self, currentAudioFrame, parent=None, chunk = 2048, channels = 1, rate = 8000, output_name = "outputClass.wav" ):
+        super(AudioRecorder, self).__init__(parent)
+        self.CHUNK = chunk
+        self.FORMAT = pyaudio.paInt16
+        self.CHANNELS = channels
+        self.RATE = rate
+        self.WAVE_OUTPUT_FILENAME = output_name
+        self.currentAudioFrame = currentAudioFrame
+        
+        self.stopped = True
+        print("AudioRecorder INIT")
+        
+    def openStream(self):
+        # self._stream = self._audio.open(
+        # format=self.pyaudio_format,
+        # channels=self.num_channels,
+        # rate=self._raw_audio_sample_rate_hz,
+        # input=True,
+        # output=False,
+        # frames_per_buffer=self.frames_per_chunk,
+        # start=True,
+        # stream_callback=self._enqueue_raw_audio,
+        # **kwargs)
+        self.p = pyaudio.PyAudio()
+        self.stream = self.p.open(format=self.FORMAT,
+                         input_device_index=0,
+                         channels=self.CHANNELS,
+                         rate=self.RATE,
+                         input=True,
+                         frames_per_buffer=self.CHUNK)
+        self.frames = []
+        self.stopped = False
+        self.startTimer()
+    def startTimer(self):
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.recordara)
+        self.timer.start(int(self.CHUNK*1000/self.RATE))
+        #self.timer.start(100)
+    @pyqtSlot(str)
+    def stopStartRecorder(self, inputSource):
+        if inputSource == 'Audio Mic':
+            self.openStream()
+            
+        elif inputSource == 'Midi Keyboard':
+            self.stopit()
+    def recordara(self):
+        print("recording")
+        data = self.stream.read(self.CHUNK)
+        self.currentAudioFrame.put(data)
+        self.frames.append(data)
+    def stopit(self):
+        if not self.stopped:
+            self.timer.stop()
+            self.stream.stop_stream()
+            self.stream.close()
+            self.p.terminate()
+            self.saveRecording()
+        print("stop recording")
+    def saveRecording(self):
+        wf = wave.open(self.WAVE_OUTPUT_FILENAME, 'wb')
+        wf.setnchannels(self.CHANNELS)
+        wf.setsampwidth(self.p.get_sample_size(self.FORMAT))
+        wf.setframerate(self.RATE)
+        wf.writeframes(b''.join(self.frames))
+        wf.close()
+
 class TryApp(QObject):
     def __init__(self , parent = None):
         super(TryApp, self).__init__(parent)
@@ -209,18 +222,22 @@ class TryApp(QObject):
         self.stopTimer.start(20000)
         self.startProc()
     def startProc(self):
-        self.audioRecorder = AudioRecorder(currentAudioFrame = self.currentAudioFrame, parent=self, chunk = 4*1024 )
+        self.audioRecorder = AudioRecorder(currentAudioFrame = self.currentAudioFrame, parent=self, chunk = 1*1024 )
         self.audioRecorder.stopStartRecorder('Audio Mic')
         self.threadPitchEstimator = QThread()
         self.pitchEstimator = YinEstimator(currentAudioFrame = self.currentAudioFrame, parent=None, currentAudioNote = self.currentAudioNote,  harmoThresh=0.15, medianOrder=3)
         self.pitchEstimator.moveToThread(self.threadPitchEstimator)
+
         self.threadAudio2MidiEvents = QThread()
         self.audio2MidiEvents = Audio2MidiEvents(currentAudioNote = self.currentAudioNote, currentAudio2MidiEvent = self.currentAudio2MidiEvent, parent=None)
         self.audio2MidiEvents.moveToThread(self.threadAudio2MidiEvents)
-        self.threadPitchEstimator.start()
-        self.threadAudio2MidiEvents.start()
-        self.threadAudio2MidiEvents.started.connect(self.audio2MidiEvents.process)
+
         self.threadPitchEstimator.started.connect(self.pitchEstimator.process)
+        self.threadPitchEstimator.start()
+        self.threadAudio2MidiEvents.started.connect(self.audio2MidiEvents.process)
+        self.threadAudio2MidiEvents.start()
+        
+        
     def killAll(self):
         print("KILLALL")
         self.audioRecorder.stopit()
