@@ -42,7 +42,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.nn.utils import weight_norm
 import torch.optim as optim 
-#from Models.LSTMCell import LSTM as LSTM_Duet
 import sys
 # custom imports
 from GuiClasses.MidiReader import MidiKeyboardReaderAsync, MidiReaderSync
