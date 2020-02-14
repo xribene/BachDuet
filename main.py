@@ -45,7 +45,7 @@ import torch.optim as optim
 #from Models.LSTMCell import LSTM as LSTM_Duet
 import sys
 # custom imports
-from GuiClasses.MidiKeyboard import MidiKeyboardReaderAsync, MidiReaderSync
+from GuiClasses.MidiReader import MidiKeyboardReaderAsync, MidiReaderSync
 from GuiClasses.Timers import Clock, Metronome, TempoEstimator
 from GuiClasses.NeuralNetworkIsmir import NeuralNetSync, NeuralNet
 from GuiClasses.AudioRecording import YinEstimator, Audio2MidiEvents, AudioRecorder
@@ -378,7 +378,7 @@ class BachDuet(QWidget):
         #TODO 
         self.currentAudioFrame = Queue()
         self.currentAudioNote = Queue()
-        self.currentAudio2MidiEvent = Queue()
+        self.audioMidiEventsQueue = Queue()
         
         # Each player has a sync and async module related to them. 
         # Sync modules operate in sync with the clock
@@ -402,8 +402,8 @@ class BachDuet(QWidget):
                 # for human players, the sync module is MidiReaderSync(), which 
                 # reads the input from tempAsyncQueue
                 tempSyncThread = QThread()
-                tempSync = MidiReaderSync(currentMidiKeyboardNote = tempAsyncQueue,  
-                                            currentAudio2MidiEvent = self.currentAudio2MidiEvent,
+                tempSync = MidiReaderSync(keyboardMidiEventsQueue = tempAsyncQueue,  
+                                            audioMidiEventsQueue = self.audioMidiEventsQueue,
                                             parentPlayer = player)
                 tempSync.moveToThread(tempSyncThread)
             elif player.type in ['machine', 'machine2']:

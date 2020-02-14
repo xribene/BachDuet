@@ -17,7 +17,7 @@ class MidiKeyboardReaderAsync(QObject):
 
     Attributes
     ----------
-    currentMidiKeyboardNote : Queue()
+    keyboardMidiEventsQueue : Queue()
         The Queue in which it pushes noteOn midi events that reads from a MIDI Keyboard
     internalKeyboardAsyncBuffer : Queue()
         This Queue contains all the midi events from the internal keyboard of the device
@@ -31,7 +31,7 @@ class MidiKeyboardReaderAsync(QObject):
         stops reading MIDI input
     readMidiInput() : None
         reads input from both input streams (Midi and internal keyboards)
-        and pushes the noteOn events in the currentMidiKeyboardNote Queue()
+        and pushes the noteOn events in the keyboardMidiEventsQueue Queue()
         Extra steps are taken to ensure that the input is monophonic. 
     getMidiEventInfo(midiEvent, keystation) : list
         Takes a midiEvent as an input and returns 
@@ -45,11 +45,11 @@ class MidiKeyboardReaderAsync(QObject):
 
     """
     # sendDurToEstimatorSignal = pyqtSignal(float)
-    def __init__(self, currentMidiKeyboardNote, internalKeyboardAsyncBuffer, parentPlayer):
+    def __init__(self, keyboardMidiEventsQueue, internalKeyboardAsyncBuffer, parentPlayer):
         super(MidiKeyboardReaderAsync, self).__init__()
         self.parentPlayer = parentPlayer
         self.params = self.parentPlayer.params
-        self.currentMidiKeyboardNote = currentMidiKeyboardNote 
+        self.keyboardMidiEventsQueue = keyboardMidiEventsQueue 
         self.internalKeyboardAsyncBuffer = internalKeyboardAsyncBuffer 
 
         # Timer that calls readMidiInput every 1 millisecond. 
@@ -160,12 +160,12 @@ class MidiKeyboardReaderAsync(QObject):
                         # time a new NoteOn event happens, we empty the Queue from any previous
                         # notes. 
                         try:
-                            self.currentMidiKeyboardNote.get(block=False)
+                            self.keyboardMidiEventsQueue.get(block=False)
                         except:
                             pass
                     # after we empty (or not) the queue from any previous notes, we push the 
                     # new NoteOn event
-                    self.currentMidiKeyboardNote.put([midiEventType, self.parentPlayer.channelOut, pitch])#,self.newNote))
+                    self.keyboardMidiEventsQueue.put([midiEventType, self.parentPlayer.channelOut, pitch])#,self.newNote))
                     #TODO add comments on the idea behind the following lines
                     if self.parentPlayer.holdFlag:
                         self.parentPlayer.ignoreNoteOff += 1 # self.ignoreNoteOff = True
@@ -205,10 +205,10 @@ class MidiReaderSync(QObject):
 
     Attributes
     ----------
-    currentMidiKeyboardNote : Queue()
+    keyboardMidiEventsQueue : Queue()
         The queue where MidiKeyboardReaderAsync keeps the keyboard midi events.
         MidiReaderSync picks the last event of this Queue at every clock 'tick'
-    currentAudio2MidiEvent : Queue()
+    audioMidiEventsQueue : Queue()
         The queue where Audio2MidiAsync keeps the midi events which where converted
         from the audio input
     parentPlayer : Player()
@@ -225,16 +225,16 @@ class MidiReaderSync(QObject):
     -------
     getNewMidiEvent(clockTrigger) : None
         a slot that runs on every clockTrigger, and reads the last midi events from 
-        either the currentMidiKeyboardNote or the currentAudio2MidiEvent Queues
+        either the keyboardMidiEventsQueue or the audioMidiEventsQueue Queues
 
     """
     midiReaderOutputSignal = pyqtSignal(dict)
-    def __init__(self,  currentMidiKeyboardNote, currentAudio2MidiEvent, parentPlayer):
+    def __init__(self,  keyboardMidiEventsQueue, audioMidiEventsQueue, parentPlayer):
         super(MidiReaderSync,self).__init__()
         self.parentPlayer = parentPlayer
         self.params = self.parentPlayer.params 
-        self.currentMidiKeyboardNote = currentMidiKeyboardNote 
-        self.currentAudio2MidiEvent = currentAudio2MidiEvent
+        self.keyboardMidiEventsQueue = keyboardMidiEventsQueue 
+        self.audioMidiEventsQueue = audioMidiEventsQueue
 
         # TODO don't keep output in a self variable. remember the problem with self.history
         # for now, I ve fixed this problem using deepcopy.copy in the Memory() module
@@ -268,7 +268,7 @@ class MidiReaderSync(QObject):
         globalTick = clockTrigger['globalTick']
         if self.inputMidiSource == 'Midi Keyboard':
             try:
-                [midiEventType, midiEventChannel, midiEventPitch] = self.currentMidiKeyboardNote.get(block=False)
+                [midiEventType, midiEventChannel, midiEventPitch] = self.keyboardMidiEventsQueue.get(block=False)
                 if midiEventType == 'noteOn' : 
                     # It is always 'noteOn' since MidiKeyboardReaderAsync doent push noteOFF 
                     # events in the Queue
@@ -300,7 +300,7 @@ class MidiReaderSync(QObject):
         #     # However , Audio2MidiEvent, sends also restEvents(as noteOn), so I know that whenever 
         #     #the queue is empty then, I send the previous note as hold=0 (for rest its always 1)
         #     try:
-        #         [midiEventType, midiEventChannel, midiEventPitch] = self.currentAudio2MidiEvent.get(block=False)
+        #         [midiEventType, midiEventChannel, midiEventPitch] = self.audioMidiEventsQueue.get(block=False)
         #         if midiEventType == 'noteOn' : # if NoneOn (always) since Audioreader doent sent noteOFF for now
         #             self.lastNote = midiEventPitch
         #             # SEND TO HUMAN Bus , midiNumber, hit, tick

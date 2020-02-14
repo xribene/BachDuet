@@ -120,10 +120,10 @@ class YinEstimator(QObject):
         # self.timer.stop()
         #self.saveRecording()
 class Audio2MidiEvents(QObject):
-    def __init__(self, currentAudioNote, currentAudio2MidiEvent, parent = None,):
+    def __init__(self, currentAudioNote, audioMidiEventsQueue, parent = None,):
         super(Audio2MidiEvents, self).__init__(parent)
         self.currentAudioNote = currentAudioNote
-        self.currentAudio2MidiEvent = currentAudio2MidiEvent
+        self.audioMidiEventsQueue = audioMidiEventsQueue
         self.stop = False
         self.lastNote = ''
     def stopit(self):
@@ -140,7 +140,7 @@ class Audio2MidiEvents(QObject):
                     #print([144,self.lastNote, 0])
                 if data >=0:
                     #print([144,data,127])
-                    self.currentAudio2MidiEvent.put(['noteOn', 144, data])#,self.newNote))
+                    self.audioMidiEventsQueue.put(['noteOn', 144, data])#,self.newNote))
                     print(['noteOn', 144, data])
                 self.lastNote = data
 
@@ -217,7 +217,7 @@ class TryApp(QObject):
         super(TryApp, self).__init__(parent)
         self.currentAudioFrame = Queue()
         self.currentAudioNote = Queue()
-        self.currentAudio2MidiEvent = Queue()
+        self.audioMidiEventsQueue = Queue()
         self.stopTimer = QTimer(timeout=self.killAll, singleShot=True)
         self.stopTimer.start(20000)
         self.startProc()
@@ -229,7 +229,7 @@ class TryApp(QObject):
         self.pitchEstimator.moveToThread(self.threadPitchEstimator)
 
         self.threadAudio2MidiEvents = QThread()
-        self.audio2MidiEvents = Audio2MidiEvents(currentAudioNote = self.currentAudioNote, currentAudio2MidiEvent = self.currentAudio2MidiEvent, parent=None)
+        self.audio2MidiEvents = Audio2MidiEvents(currentAudioNote = self.currentAudioNote, audioMidiEventsQueue = self.audioMidiEventsQueue, parent=None)
         self.audio2MidiEvents.moveToThread(self.threadAudio2MidiEvents)
 
         self.threadPitchEstimator.started.connect(self.pitchEstimator.process)
