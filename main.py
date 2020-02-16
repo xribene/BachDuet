@@ -60,11 +60,9 @@ from GuiClasses.Preferences import *
 from GuiClasses.Player import *
 from GuiClasses.PianoRollView import PianoRollView
 from GuiClasses.PianoRollPainter import PianoRollPainter
-
 from GuiClasses.Memory import Memory
 from GuiClasses.InputDialog import InputDialog
 from keyMapping import ddd as KeyMappings
-
 from ParsingClasses import RhythmTemplate
 from utils import Params, TensorBuffer, rename
 from ParsingClasses import Vocabulary
@@ -100,10 +98,17 @@ class BachDuet(QWidget):
         an ApplicationContext class that contains the path
         of the resources
     logger : Logger()
-        the logger of the app
+        the logger of the app. Currently not used
     parent : None
         BachDuet is the top in hierarchy QWidget, so it has 
         no parrent
+
+    Signals
+    -------
+    ctrlSignal() : pyqtSignal()
+        it emits a signal when the ctrl button is pressed. This signal
+        is usefull for some GUI classes. I.e ctrl+p opens the
+        preferences box etc.
 
     Methods
     -------
@@ -159,7 +164,6 @@ class BachDuet(QWidget):
     ctrlSignal = pyqtSignal(str)
     def __init__(self, appctxt, logger, parent = None):
         super(BachDuet, self).__init__()
-        logger.warning("message warning from BachDUet")
         self.setObjectName("BachDuet")
         # self.config contains system settings loaded from 
         # a json file using the Params() class from utils.py
@@ -428,7 +432,7 @@ class BachDuet(QWidget):
                 # which is the Metronome
                 tempKeyboardBuffer = None
                 tempSyncThread = QThread()
-                tempSync = Metronome(appctxt = self.appctxt, parentPlayer = player, parent = self)
+                tempSync = Metronome(appctxt = self.appctxt, parentPlayer = player)
                 tempSync.moveToThread(tempSyncThread)
                 tempAsync = None
                 tempAsyncThread = None
@@ -449,7 +453,7 @@ class BachDuet(QWidget):
 
         # Manager Thread
         self.threadManager = QThread()
-        self.manager = Manager(self.params, self.players, parent = self) # self.midiOut, 
+        self.manager = Manager(self.players, parent = self) # self.midiOut, 
         self.manager.moveToThread(self.threadManager)
 
         # Memory Thread
@@ -812,7 +816,7 @@ class BachDuet(QWidget):
         #TODO thats not good practice, I shouldn't communicate directly with self.clock
         # but I should do it through signals/slots. But since I am running a while loop 
         # on self.clock.run1, the event loop is blocked, so no signal/slot are received
-        self.clock.stopit()
+        self.clock.stopClock()
         
         for player in self.players:
             if player.type == 'human':

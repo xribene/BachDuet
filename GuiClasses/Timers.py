@@ -11,20 +11,67 @@ import logging
 from utils import Params
 
 logger = logging.getLogger('default.'+__name__)
+
 class Clock(QObject):
+    """ The clock of the app
+
+    For this class I didn't use the slot mechanism of Qt. 
+    The while loop that runs in the run1() method, blocks the
+    event loop, and it can't accept signals from other modules. 
+
+    Also, to create the clock signal, I used time.sleep() inside
+    a while loop, instead of  using a QTimer (like I did for example
+    in MidiKeyboardReaderAsync()), because I wanted the speed of the 
+    clock to be adjustable by the user. 
+
+    Attributes:
+        stopit: when True, the clock stops
+        config: the config file for the app
+        metronomeBPM: the metronome BPM affects
+            the speed of the clock
+        dur: the number of 16th's in one measure.
+            It depends on the timeSignature. 
+        tick: counter of the clock "ticks".
+            0 <= tick < dur
+        globalTick: counts the total number of 
+            ticks "played" in the current session
+        rhythmTokens: a list of the rhythmTokens
+            for the current timeSignature. 
+            I.e for 4/4 and tick=0, token is 1_0_0
+            (see the paper for details)
+        paused: True when clock is paused
+
+    Signals:
+        clockSignal(dict): it emits on every "tick" (16th note)
+            and it is connected with slots in most of the 
+            other modules.
+
+    Methods:
+        changeBpm(value): This function works like a setter 
+            for the metronomeBPM attribute. Normally it should
+            be a slot().
+        timeSign2dur(timeSignature) : finds the duration of 
+            a measure in 16th notes, for the given timeSignature
+        stopClock(): sets the stopit flag to True
+        pauseResumeClock(): changes the paused flag to the 
+            oposite value of that it had before. 
+        reset(): resets the tick counter. It is called every
+            time the user resets the memory of the neural net
+        run1(): the function that generates the clock signal.
+            It uses a while loop, with the time.sleep() function
+
+    """
     clockSignal = pyqtSignal(dict)
+
     def __init__(self, appctxt):
         super(Clock, self).__init__()
-        self.stopped = False
+        self.stopit = False
         
         self.config = Params(appctxt.get_resource("bachDuet.json"))
         self.metronomeBPM =  self.config.default['metronome']["BPM"]
-        self.old = time.time()
         self.setTimeSignature(self.config.timeSignature)
-        #self.daemon = True 
         self.tick = 0
         self.globalTick = 0
-        logger.warning("inside clock")
         self.paused = True  
     def changeBpm(self, value):
         self.metronomeBPM = value
@@ -32,14 +79,12 @@ class Clock(QObject):
         [nom,denom] = timeSignature.split("/")
         nom = int(nom)
         denom = int(denom)
-        self.timeSignature = timeSignature
         self.dur = nom*(16//denom)
         self.tick = 0
-        # print(f"nom {nom} denom {denom} dur {self.dur}")
-        self.RhythmTemplate = RhythmTemplate(self.timeSignature)
-        self.rhythmTokens = self.RhythmTemplate.getRhythmTokens(self.dur,'last')
-    def stopit(self):
-        self.stopped=True
+        rhythmTemplate = RhythmTemplate(timeSignature)
+        self.rhythmTokens = rhythmTemplate.getRhythmTokens(self.dur,'last')
+    def stopClock(self):
+        self.stopit=True
     def pauseResumeClock(self):
         self.paused = self.paused ^ True
         print(f"paused = {self.paused}")
@@ -47,17 +92,15 @@ class Clock(QObject):
         self.tick = 0
     @pyqtSlot()
     def run1(self):
-        while not self.stopped:
+        while not self.stopit:
             if not self.paused:
                 time.sleep(60/self.metronomeBPM/4)
-                # QThread.sleep(60/self.metronomeBPM/4)
                 clockTriger = {
                     'tick' : self.tick,
                     'rhythmToken' : self.rhythmTokens[self.tick],
                     'metronomeBPM' : self.metronomeBPM,
                     'globalTick' : self.globalTick
                 }
-                    # [self.tick,self.rhythmTokens[self.tick], self.metronomeBPM]
                 #print(f"\n\n\n Clock to emit {clockTriger} at time {time.time()}")
                 self.clockSignal.emit(clockTriger)
                 self.tick += 1 
@@ -65,8 +108,12 @@ class Clock(QObject):
                 if self.tick == self.dur:
                     self.tick = 0
             else:
-                time.sleep(0.02) 
+                # used to reduce the CPU usage. If ommited, temperature
+                # rises to max. 
+                time.sleep(0.02)
+ 
 class TempoEstimator(QObject):
+    """Currently not used."""
     updateTempoSignal = pyqtSignal(int)
     def __init__(self, params):
         super(TempoEstimator, self).__init__(None)
@@ -80,35 +127,65 @@ class TempoEstimator(QObject):
     def dur2bpm(self, duration):
         raise NotImplementedError
 
-
 class Metronome(QObject):
-    #metronomeSignal = pyqtSignal()
+    """ The metronome player/agent
+
+    This class works in sync with the clock, and
+    is responsible for sending "beep" sounds to 
+    indicate each beat of the measure. I.e in a 
+    4/4 time signature, the clock emits 16 signals 
+    (ticks) per measure, the metronome receives all
+    of them, and generates sound every 4 "ticks"
+
+    Attributes:
+        stopit: when True, the clock stops
+        config: the config file for the app
+        metronomeBPM: the metronome BPM affects
+            the speed of the clock
+        dur: the number of 16th's in one measure.
+            It depends on the timeSignature. 
+        tick: counter of the clock "ticks".
+            0 <= tick < dur
+        globalTick: counts the total number of 
+            ticks "played" in the current session
+        rhythmTokens: a list of the rhythmTokens
+            for the current timeSignature. 
+            I.e for 4/4 and tick=0, token is 1_0_0
+            (see the paper for details)
+        paused: True when clock is paused
+
+    Signals:
+        metronome2managerSignal(dict): it emits on every "tick" (16th note)
+            and it is connected with slots in most of the 
+            other modules.
+
+    Methods:
+        timeSign2dur(timeSignature) : finds the duration of 
+            a measure in 16th notes, for the given timeSignature
+        process(clockTrigger): A slot, that runs every time the clock
+            emits its signal (every "tick"/16th). It gets the current
+            "tick" from the clock, and it decides whether to send 
+            a "beep" sound to the Manager(). The "beep" sound for the
+            first beat of the measure (pitch1) is different from the 
+            rest beats (pitch2)
+
+    """
+
     metronome2managerSignal = pyqtSignal(dict)
-    def __init__(self, appctxt, parentPlayer, parent):
+    def __init__(self, appctxt, parentPlayer):
         super(Metronome, self).__init__(None) # cant move objects with parent, to threads
         self.parentPlayer = parentPlayer
-        self.parent = parent
-        self.status = True
         self.config = Params(appctxt.get_resource("bachDuet.json"))
-        self.channel = self.parentPlayer.channelOut # 144 + params['metronome']["midiChanOut"] - 1
-        self.volume = self.parentPlayer.volume #params['metronome']["volume"]
-        self.beep2pitch =  self.parentPlayer.pitch2 # params['metronome']["pitch2"]
-        self.beep1pitch =  self.parentPlayer.pitch1
-        self.timeSignature2ticks(self.config.timeSignature)
-        logger.warning('inside metronome')
-    def timeSignature2ticks(self, timeSignature):
+        self.timeSign2dur(self.config.timeSignature)
+
+    def timeSign2dur(self, timeSignature):
         [nom,denom] = timeSignature.split("/")
         nom = int(nom)
         denom = int(denom)
-        self.timeSignature = timeSignature
         self.dur = nom*(16//denom)
     
-    @pyqtSlot()
-    def changeMetronomeStatus(self):
-        self.status = self.status ^ True
     @pyqtSlot(dict)
     def process(self, clockTrigger):
-        # triggarei synexeia, oxi mono otan prepei na akoustei. Otan den prepei na akoustei apla stelnei None sto pitch. To ekana gia na douleuei kalytera o Manager
         #print(f"In {self.__class__.__name__} "clockTriger)
         tick = clockTrigger['tick']
         rhythmToken = clockTrigger['rhythmToken']
@@ -122,22 +199,15 @@ class Metronome(QObject):
             "globalTick" : globalTick,
             "rhythmToken": rhythmToken
         }
-        if self.status and (tick)%4==0:
+        if (tick)%4==0:
             # it enters here every 4 16th notes, or every quarter beat.
-            # self.parent.toolbar.lcd.display(tick//4+1)
-            #self.parent.toolbar.lcd.setDig
-            # self.le = QLineEdit()
-            # self.le.setText(str(tick)+"  ")
-            # self.parent.toolbar.lcd.display(self.le.text())
+            # TODO currently this works only when we have 4 beats in the measure
+            # the extension to more timeSignature is straight forward
             tempBeep = self.parentPlayer.pitch2
             if (tick+self.dur)%self.dur==0: # it enters here only in the first beat
                 tempBeep = self.parentPlayer.pitch1
-            #self.midiOut.send_message(self.beepOff)
-            #print(f"Metronome to emit trigger {clockTrigger}")
             output['midi'] = tempBeep
             output['artic'] = tick
-        #print(f"o metronomos esteile {output} at time {time.time()}")
+        # Metronome emits its signal, on every 16th note, and not on every beat
+        # this is not intuitive, but it makes Manager() way easier to implement
         self.metronome2managerSignal.emit(output)
-            #self.metronomeSignal.emit()
-            
-            #self.midiOut.send_message(self.beepOn)
