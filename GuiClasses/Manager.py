@@ -72,7 +72,6 @@ class Manager(QObject):
         
     @pyqtSlot(dict)
     def receiver(self, output):
-        
         for player in self.players:
             # receiver is triggered by a signal emmited from one of the players
             # we have to find from which one. 
@@ -91,10 +90,11 @@ class Manager(QObject):
                 # we keep a running average of the midi notes of each player
                 # we use this later, when we visualize the results in xml
                 # to determine the clef for each part/player
-                if player.meamMidi == 0:
-                    player.meanMidi = player.nextNoteDict['midi']
-                else:
-                    player.meanMidi = 0.7 * player.meanMidi + 0.3 * player.nextNoteDict['midi']
+                # if player.type not in ['metronome']:
+                #     if player.meanMidi == 0:
+                #         player.meanMidi = player.nextNoteDict['midi']
+                #     else:
+                #         player.meanMidi = 0.7 * player.meanMidi + 0.3 * player.nextNoteDict['midi']
                 break 
         # conditionShow is True only when we have received the output/signal 
         # from all the players/agents and indicates that the receiver() is ready
@@ -152,20 +152,20 @@ class Manager(QObject):
             self.playMidi()
             self.played = True
     def playMidi(self):
-        #print(f"INSIDE Player for tick {self.currentTick} at time {time.time()}")
+        # print(f"INSIDE Player for tick {self.currentTick} at time {time.time()}")
         for player in self.players:
             if player.type == 'metronome':
                 # Metronome() sends a sound every 4 clock "ticks". 
                 # for the rest of them it sends None
-                if player.nextNote[0] is not None: 
+                if player.nextNoteDict['midi'] is not None: 
                     # Here I update the lcd display for the beat, so the 
                     # visual and auditory cues occur simultaneously
                     #TODO maybe move the line below, inside the following
                     # if statement
                     self.parent.toolbar.lcd.display(self.currentTick//4+1)
                     if player.midiOut is not None:
-                        player.midiOut.send_message([player.channelOut, player.nextNote[0], player.volume])
-                        #print(f"metronome sound was send to channel {player.channelOut}")
+                        player.midiOut.send_message([player.channelOut, player.nextNoteDict['midi'], player.volume])
+                        # print(f"metronome sound was sent {[player.channelOut, player.nextNoteDict['midi'], player.volume]}")
             else :
                 if player.directMonFlag is True :
                     # in this case, the output of the agent/player is 
@@ -173,7 +173,7 @@ class Manager(QObject):
                     continue
                 # we are interested only in the onsets. This is ok for monophonic
                 # voices. When I receive an onset, all previous notes are stopped
-                if player.nextNote[1] == 1: # if onset
+                if player.nextNoteDict['artic'] == 1: # if onset
                     # first we check the case where the player is not onRest, namely
                     # there is a previous note still played/holded. In this case we have
                     # to send a midi off event first for this note.
@@ -189,13 +189,14 @@ class Manager(QObject):
                     # we just have to play the new midi on event. 
                     # Remember, the articulation is onset (1), for the rest token also
                     # so we want to make sure this is not a rest.
-                    if not player.nextNote[0]==0: # if not rest
-                        player.lastMidiEvent = [player.channelOut,player.nextNote[0], player.volume]
+                    if not player.nextNoteDict['midi']==0: # if not rest
+                        player.lastMidiEvent = [player.channelOut,player.nextNoteDict['midi'], player.volume]
                         if player.muteStatus is False:
                             if player.midiOut is not None:
                                 player.midiOut.send_message(player.lastMidiEvent)
+                                # print(f"machine sound was sent {player.lastMidiEvent}")
                         # Update the player's lastNote
-                        player.lastNote = player.nextNote[0]
+                        player.lastNote = player.nextNoteDict['midi']
                         # update onRest flag
                         player.onRest = False
                     else:
@@ -204,5 +205,4 @@ class Manager(QObject):
                 else:
                     # If articulation of the note is 0, then do nothing
                     pass
-        #print(f"esteila metronome {self.channelMetronome}, dnn {self.channelDnn} human {self.channelMidiKeyboard}")
    

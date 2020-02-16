@@ -12,6 +12,47 @@ from PyQt5.QtSvg import QGraphicsSvgItem
 
         
 class Player(object):
+    """ Player/agent class
+
+    Each player is associated with a Player() class,
+    which containes all the important attributes for 
+    the player. 
+
+    Attributes:
+        id:
+        name:
+        type:
+        params:
+        realTimeInput:
+        modules:
+        managerFlag:
+        bpm:
+        pitch1:
+        pitch2:
+        model:
+        temperature:
+        channelOut:
+        channelIn:
+        queueMidiEvents:
+        directMonFlag:
+        internalKeyboardFlag
+        volume
+        enableMidiKeyboard:
+        lastNote:
+        nextNote:
+        nextNoteDict
+        lastMidiEvent:
+        lastEvent:
+        onRest
+        muteStatus
+        ignoreNoteOff
+        preferenceTab:
+        mixerSlider:
+        midiIn:
+        midiOut:
+        defaultMidiIn:
+        defaultMidiOut:
+    """
     def __init__(self, type, params, realTimeInput, inputType, holdFlag, modules, enableMidiKeyb = True, name = None):
         
         self.id = id(self)
@@ -52,7 +93,7 @@ class Player(object):
         self.preferenceTab = None
         #mixer
         self.mixerSlider = None
-        self.meamMidi = 0
+        self.meanMidi = 0
         self.midiIn = None
         self.midiOut = None
         self.defaultMidiOut = params[type]["defaultMidiOut"]
