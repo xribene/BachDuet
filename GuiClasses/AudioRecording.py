@@ -26,7 +26,7 @@ import sys
 class YinEstimator(QObject):
     def __init__(self, currentAudioFrame, currentAudioNote, parent=None, chunk = 4096, rate = 44100,
                 f0_max=1000, f0_min=100, harmoThresh=0.15, medianOrder=5):
-        super(YinEstimator, self).__init__(parent)
+        super(YinEstimator, self).__init__()
         self.stop=False
         self.quantizerInit()
         self.w_len = chunk
@@ -40,6 +40,10 @@ class YinEstimator(QObject):
         [self.pitchMedianBuffer.append(0) for i in range(medianOrder)]
         print("Yin Init ")
     @pyqtSlot()
+    # TODO consider  removing the while loop
+    # process can be triggered by AudioRecorder
+    # in the same way that Clock() triggers everything else
+    # in this case we wont need currentAudioFrame Queue
     def process(self):
         print("Yin Process ")
         while not self.stop:
@@ -192,7 +196,7 @@ class AudioRecorder(QObject):
         elif inputSource == 'Midi Keyboard':
             self.stopit()
     def recordara(self):
-        print("recording")
+        # print("recording")
         data = self.stream.read(self.CHUNK)
         self.currentAudioFrame.put(data)
         self.frames.append(data)
@@ -222,10 +226,14 @@ class TryApp(QObject):
         self.stopTimer.start(20000)
         self.startProc()
     def startProc(self):
-        self.audioRecorder = AudioRecorder(currentAudioFrame = self.currentAudioFrame, parent=self, chunk = 1*1024 )
+        chunk = 2048
+        rate = 44100
+        self.audioRecorder = AudioRecorder(currentAudioFrame = self.currentAudioFrame, parent=self, rate = rate, chunk = chunk )
         self.audioRecorder.stopStartRecorder('Audio Mic')
         self.threadPitchEstimator = QThread()
-        self.pitchEstimator = YinEstimator(currentAudioFrame = self.currentAudioFrame, parent=None, currentAudioNote = self.currentAudioNote,  harmoThresh=0.15, medianOrder=3)
+        self.pitchEstimator = YinEstimator(currentAudioFrame = self.currentAudioFrame, parent=None, 
+                                            currentAudioNote = self.currentAudioNote,  harmoThresh=0.15,
+                                             medianOrder=7, rate = rate) # chunk is useless here
         self.pitchEstimator.moveToThread(self.threadPitchEstimator)
 
         self.threadAudio2MidiEvents = QThread()

@@ -10,7 +10,7 @@
             "directMon":null,
             "internalKeyboard":null,
             "temperature":null,
-            "volume" : 127,
+            "volume" : 120,
             "midiChanIn" : null,
             "midiChanOut" : 10,
             "defaultMidiOut" : "Omni",

@@ -17,7 +17,7 @@ class Player(object):
     Each player is associated with a Player() class,
     which containes all the important attributes for 
     the player. 
-
+    # TODO fill the docs
     Attributes:
         id:
         name:

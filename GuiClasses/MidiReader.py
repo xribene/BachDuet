@@ -19,7 +19,7 @@ class MidiKeyboardReaderAsync(QObject):
     ----------
     keyboardMidiEventsQueue : Queue()
         The Queue in which it pushes noteOn midi events that reads from a MIDI Keyboard
-    internalKeyboardAsyncBuffer : Queue()
+    internalKeyboardAsyncQueue : Queue()
         This Queue contains all the midi events from the internal keyboard of the device
     parentPlayer : Player()
         The parent human player ascociated with the current instance of the MidiKeyboardReaderAsync
@@ -45,12 +45,12 @@ class MidiKeyboardReaderAsync(QObject):
 
     """
     # sendDurToEstimatorSignal = pyqtSignal(float)
-    def __init__(self, keyboardMidiEventsQueue, internalKeyboardAsyncBuffer, parentPlayer):
+    def __init__(self, keyboardMidiEventsQueue, internalKeyboardAsyncQueue, parentPlayer):
         super(MidiKeyboardReaderAsync, self).__init__()
         self.parentPlayer = parentPlayer
         self.params = self.parentPlayer.params
         self.keyboardMidiEventsQueue = keyboardMidiEventsQueue 
-        self.internalKeyboardAsyncBuffer = internalKeyboardAsyncBuffer 
+        self.internalKeyboardAsyncQueue = internalKeyboardAsyncQueue 
 
         # Timer that calls readMidiInput every 1 millisecond. 
         self.timer = QTimer()
@@ -78,7 +78,7 @@ class MidiKeyboardReaderAsync(QObject):
         # is enabled, and get the last event if any.
         if self.parentPlayer.internalKeyboardFlag == True:
             try:
-                midiEventInternalKeyboard = [self.internalKeyboardAsyncBuffer.get(block = False)]
+                midiEventInternalKeyboard = [self.internalKeyboardAsyncQueue.get(block = False)]
             except :
                 midiEventInternalKeyboard = None
         else:
@@ -118,6 +118,14 @@ class MidiKeyboardReaderAsync(QObject):
                     self.parentPlayer.lastMidiEvent = [self.parentPlayer.channelOut, pitch, velo]
                 if midiEventType == 'noteOff' :
                     # NOTICE : we do not add noteOff events in the Queue()
+                    # I ve used a bit weird logic here (TODO explain this logic)
+                    # TODO for a polyphonic version of the system, a better
+                    # way has to take consideration of noteOffs. We have to maintain
+                    # an structure, with all the MIDI notes, and a active/inactive
+                    # flag for each.
+                    # TODO Also, for BachDuet v2, there will not be a 16th note
+                    # quantization (probably), so we ll have to take in consideration
+                    # the noteOff events and calculate the dur of the note
 
                     ###############################################################
                     ####### UPDATE DURATIONS for TempoEstimator() #################
@@ -255,6 +263,7 @@ class MidiReaderSync(QObject):
         # inputMidiSource can be either the Midi Keyboard, or Audio input
         # TODO get it from attributes of parentPlayer
         self.inputMidiSource = 'Midi Keyboard' 
+        self.inputMidiSource = 'Audio Mic'
 
     @pyqtSlot(dict) 
     def getNewMidiEvent(self,  clockTrigger):
@@ -288,32 +297,42 @@ class MidiReaderSync(QObject):
                 else:
                     # here it means that we have a rest. The symbol for the rest os '0_1' 
                     # meaning midi=0 and articulation=1
-                    # set the correct rest symbol, maybe zero (for DNN is '0_1'=106)
+                    # set the correct rest symbol, maybe zero (for DNN is '0_1'=106) # TODO remove this comment (?)
                     self.output['midi'] = 0
                     self.output['artic'] = 1
+        
+        elif self.inputMidiSource == 'Audio Mic':
+            # There are some differences here compared to the 'Midi Keyboard' if branch
+            # because, Audio2MidiEvents() sends different type of events compared to 
+            # MidiKeyboardReaderAsync(). These differences originate from the fact that 
+            # the PitchEstimator() that Audio2MidiEvents() uses assumes monophonic imput only
+            # while the RtMIDI() interface that MidiKeyboardReaderAsync() uses, can work
+            # with polyphonic inputs. 
+            # 'Midi Keyboard' works with the hold flag, and midiKeyboardAsync doesn't send rest events.
+            # However , Audio2MidiEvent, sends also restEvents(as noteOn), so I know that whenever 
+            #the queue is empty then, I send the previous note as hold=0 (for rest its always 1)
+           
+            #print(f"AUDIO QUEUE SIZE IS {self.audioMidiEventsQueue.qsize()}")
+            try:
+                [midiEventType, midiEventChannel, midiEventPitch] = self.audioMidiEventsQueue.get(block=False)
+                if midiEventType == 'noteOn' : 
+                    # It always enters this 'if', since Audioreader doent sent noteOFF for now
+                    self.parentPlayer.lastNote = midiEventPitch
+                    self.output['midi'] = midiEventPitch
+                    self.output['artic'] = 1
+
+            except:
+                # Exception means empty queue, so the previous note is holded
+                # --> articulation is 0 (except if the note was rest, then artic=1)
+                self.output['midi'] = self.parentPlayer.lastNote
+                if self.parentPlayer.lastNote == 0:
+                    self.output['artic'] = 1
+                else:
+                    self.output['artic'] = 0
+                # self.send2BusMidiKeyboard = [None, self.parentPlayer.lastNote, hold, tick, rhythmToken]
         self.output['tick'] = tick
         self.output['rhythmToken'] = rhythmToken
         self.output['globalTick'] = globalTick
-        # elif self.inputMidiSource == 'Audio Mic':
-        #     # There is a difference here compared to keyboardMidi, and I should fix that
-        #     # keyboardMidi works with the hold flag, and midiKeyboardAsync doesn't send rest events.
-        #     # However , Audio2MidiEvent, sends also restEvents(as noteOn), so I know that whenever 
-        #     #the queue is empty then, I send the previous note as hold=0 (for rest its always 1)
-        #     try:
-        #         [midiEventType, midiEventChannel, midiEventPitch] = self.audioMidiEventsQueue.get(block=False)
-        #         if midiEventType == 'noteOn' : # if NoneOn (always) since Audioreader doent sent noteOFF for now
-        #             self.lastNote = midiEventPitch
-        #             # SEND TO HUMAN Bus , midiNumber, hit, tick
-        #             # we use tick for synchronization with the DNN output
-        #             hold = 1
-        #             self.send2BusMidiKeyboard = [None, midiEventPitch, hold, tick, rhythmToken]
-        #     except:
-        #         # here hit is 0, because it is a note that is hold
-        #         if self.lastNote == 0:
-        #             hold = 1
-        #         else:
-        #             hold = 0
-        #         self.send2BusMidiKeyboard = [None, self.lastNote, hold, tick, rhythmToken]
 
         self.midiReaderOutputSignal.emit(self.output) 
         #print(f"human Sync emits signal to manager {self.output} at tick {tick} at time {time.time()}")

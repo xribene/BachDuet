@@ -216,6 +216,7 @@ class NeuralNet(QObject):
                 #note = pitch.Pitch(midi = int(currentKeyMidi))
                 #pitchClassName = note.name
                 #fullName = note.nameWithOctave
+                print(f"midi is {currentKeyMidi} and type is {currentKeyMidi.__class__}")
                 currentKeyPitchClassIndex = int(self.notesDict[currentKeyMidi]['primary']['cpc'])
                 #currentKeyPitchClassIndex = note.pitchClass
             else:

@@ -25,7 +25,7 @@ from pyqtgraph.Qt import QtGui
 # python imports
 import logging
 import logging.config
-from collections import deque,  OrderedDict
+from collections import deque,  OrderedDict, defaultdict
 from queue import Queue
 import time, threading
 import sys
@@ -47,7 +47,8 @@ import sys
 from GuiClasses.MidiReader import MidiKeyboardReaderAsync, MidiReaderSync
 from GuiClasses.Timers import Clock, Metronome, TempoEstimator
 from GuiClasses.NeuralNetworkIsmir import NeuralNetSync, NeuralNet
-from GuiClasses.AudioRecording import YinEstimator, Audio2MidiEvents, AudioRecorder
+from GuiClasses.AudioRecording2 import Audio2MidiEvents, AudioRecorder
+from GuiClasses.PitchEstimators import YinEstimator, CrepeEstimator
 from GuiClasses.StaffItem import Staff
 from GuiClasses.StaffPainter import StaffPainter
 from GuiClasses.StaffView import StaffView
@@ -389,32 +390,82 @@ class BachDuet(QWidget):
         # or according to signals from other modules (besides clock)
 
         for player in self.players:
+            modules = defaultdict(lambda:None)
             if player.type in ['human', 'human2']:
                 # for humans the async module is MidiKeyboardReaderAsync that reads 
                 # the input from the midi keyboard, or the keyboard of the laptop
-                # the notes are stored in either the keyboardBuffer (laptop keyboard)
-                #  or the asyncQueue (midi keyboard)
-                tempKeyboardBuffer = Queue()
-                tempAsyncQueue = Queue()
-                tempAsync = MidiKeyboardReaderAsync( tempAsyncQueue, tempKeyboardBuffer, player)
-                
+                # the notes are stored in either the internalKeyboardQueue (laptop keyboard)
+                # or the asyncQueue (midi keyboard)
+                # TODO update doc's, humans can have two async modules (include Audio)
+                rate = 16000
+                chunk = 1024
+                # set up AudioRecorder module for each human
+                tempAudioFramesQueue = Queue()
+                tempAudioRecorder = AudioRecorder(audioFramesQueue =  tempAudioFramesQueue,
+                                                  parentPlayer = player, 
+                                                  chunk = chunk, # read this from json file instead
+                                                  rate = rate)
+                # set up pitchEstimator module for each human
+                tempPitchEstimationsQueue = Queue()
+                tempPitchEstimatorThread = QThread()
+                # tempPitchEstimator = YinEstimator(audioFramesQueue = tempAudioFramesQueue, 
+                #                                   pitchEstimationsQueue = tempPitchEstimationsQueue, 
+                #                                   parentPlayer = player, appctxt = self.appctxt,
+                #                                   medianOrder=5, rate = rate)
+                tempPitchEstimator = CrepeEstimator(audioFramesQueue = tempAudioFramesQueue, 
+                                                  pitchEstimationsQueue = tempPitchEstimationsQueue, 
+                                                  parentPlayer = player, appctxt = self.appctxt
+                                                  )
+
+                tempPitchEstimator.moveToThread(tempPitchEstimatorThread)
+
+                # set up Audio2MidiEvents module for each human
+                tempAsyncAudioThread = QThread()
+                tempAsyncAudioQueue = Queue()
+                tempAsyncAudio = Audio2MidiEvents( pitchEstimationsQueue = tempPitchEstimationsQueue,
+                                                   audioMidiEventsQueue = tempAsyncAudioQueue, 
+                                                   parentPlayer = player)
+                # set up MidiKeyboardReaderAsync
                 # there is not thread for the async module of human players
                 # (MidiKeyboardReaderAsync) since it uses a timer to run periodicaly 
                 # on the background
                 tempAsyncThread = None
+                tempAsyncQueue = Queue()
+                tempInternalKeyboardQueue = Queue()
+                tempAsync = MidiKeyboardReaderAsync( keyboardMidiEventsQueue = tempAsyncQueue, 
+                                                     internalKeyboardAsyncQueue =  tempInternalKeyboardQueue, 
+                                                     parentPlayer = player)
+                
                 # for human players, the sync module is MidiReaderSync(), which 
-                # reads the input from tempAsyncQueue
+                # reads the input from tempAsyncQueue and the tempAsyncAudioQueue
                 tempSyncThread = QThread()
                 tempSync = MidiReaderSync(keyboardMidiEventsQueue = tempAsyncQueue,  
-                                            audioMidiEventsQueue = self.audioMidiEventsQueue,
-                                            parentPlayer = player)
+                                          audioMidiEventsQueue = tempAsyncAudioQueue,
+                                          parentPlayer = player)
                 tempSync.moveToThread(tempSyncThread)
+                modules['audioFramesQueue'] = tempAudioFramesQueue
+                modules['audioRecorderModule'] = tempAudioRecorder
+
+                modules['pitchEstimationsQueue'] = tempPitchEstimationsQueue
+                modules['pitchEstimatorThread'] = tempPitchEstimatorThread
+                modules['pitchEstimatorModule'] = tempPitchEstimator
+
+                modules['asyncAudioThread'] = tempAsyncAudioThread
+                modules['asyncAudioQueue'] = tempAsyncAudioQueue
+                modules['asyncAudioModule'] = tempAsyncAudio
+
+                modules['asyncQueue'] = tempAsyncQueue
+                modules["asyncModule"] = tempAsync
+
+                modules["internalKeyboardQueue"] = tempInternalKeyboardQueue
+
+                modules["syncModule"] = tempSync
+                modules["syncThread"] = tempSyncThread
             elif player.type in ['machine', 'machine2']:
                 # for machine, the async module is the GeneratorDNN(), which is the neural net.
                 # The neural predicts a note on evey 16th note, but, in order to do so, it needs 
                 # the last note the human played, so NeuralNet's run function is triggered by
                 #  the signal that MidiReaderSync emits and not the Clock() signal.
-                tempKeyboardBuffer = None
                 tempSyncThread = QThread()
                 # GeneratorDNN() pushes the generated notes in the tempAsyncQueue
                 tempAsyncQueue = Queue()
@@ -427,27 +478,23 @@ class BachDuet(QWidget):
                                          self.notesDict, self.appctxt, 
                                          parentPlayer = player, parent = self)
                 tempAsync.moveToThread(tempAsyncThread)
+                modules["asyncThread"] = tempAsyncThread
+                modules['asyncQueue'] = tempAsyncQueue
+                modules["asyncModule"] = tempAsync
+                modules["syncModule"] = tempSync
+                modules["syncThread"] = tempSyncThread
             elif player.type == 'metronome':
                 # for metronome, things are simpler. There is only a sync module
                 # which is the Metronome
-                tempKeyboardBuffer = None
                 tempSyncThread = QThread()
                 tempSync = Metronome(appctxt = self.appctxt, parentPlayer = player)
                 tempSync.moveToThread(tempSyncThread)
-                tempAsync = None
-                tempAsyncThread = None
+                modules["syncModule"] = tempSync
+                modules["syncThread"] = tempSyncThread
             elif player.type == 'condition':
                 # In the future, there will be another type of player wich will be static
                 # for example, a given chord sequence, or a given melodic line
                 raise NotImplementedError
-            modules = {
-                    "keyboardBuffer" : tempKeyboardBuffer, 
-                    "asyncModule" : tempAsync,
-                    "asyncThread" : tempAsyncThread,
-                    "asyncQueue" : tempAsyncQueue,
-                    "syncModule" : tempSync,
-                    "syncThread" : tempSyncThread
-                    }
             player.modules = modules
             #print(player.__dict__)
 
@@ -475,6 +522,20 @@ class BachDuet(QWidget):
 
         # start all the threads of the sync and async modules of each player
         for player in self.players:
+            if player.modules['audioRecorderModule'] is not None:
+                # if player input mode is Audio then call
+                player.modules['audioRecorderModule'].stopStartRecorder('Audio Mic')
+                pass
+            if player.modules['pitchEstimatorThread'] is not None:
+                # player.modules['pitchEstimatorThread'].started.connect(player.modules['pitchEstimatorModule'].process)
+                player.modules['audioRecorderModule'].audioRecorderSignal.connect(player.modules['pitchEstimatorModule'].process)
+                player.modules['pitchEstimatorThread'].start()
+                pass
+            if player.modules['asyncAudioThread'] is not None:
+                player.modules['pitchEstimatorModule'].pitchEstimatorSignal.connect(player.modules['asyncAudioModule'].process)
+                # player.modules['asyncAudioThread'].started.connect(player.modules['asyncAudioModule'].process)
+                player.modules['asyncAudioThread'].start()
+                pass
             if player.modules['syncThread'] is not None:
                 player.modules['syncThread'].start()
             if player.modules['asyncThread'] is not None:
@@ -821,6 +882,7 @@ class BachDuet(QWidget):
         for player in self.players:
             if player.type == 'human':
                 player.modules['asyncModule'].stopit()
+                player.modules['asyncAudioModule'].stopit()
             if player.type in ['machine']:
                 #TODO replace this with signal and slot
                 player.modules['asyncModule'].hidden2pickle()
@@ -846,7 +908,7 @@ class BachDuet(QWidget):
                 self.ctrlPressed = True
                 self.ctrlSignal.emit("press")
             try:
-                aaa =  KeyMappings[key]
+                midiNumberPressed =  KeyMappings[key]
                 #print(KeyMappings[key])
                 #print(f"line 724 in main {KeyMappings[key]}  ctrl {self.ctrlPressed}")
                 if self.ctrlPressed is False:
@@ -856,8 +918,8 @@ class BachDuet(QWidget):
                         if player.type in ['human','human2']:
                             #print(f"internalKeyb flag for {player.type} is {player.internalKeyboardFlag}")
                             if player.internalKeyboardFlag is True:
-                                player.modules['keyboardBuffer'].put([player.channelIn, aaa, 127])
-                    # [player.modules['keyboardBuffer'].put([player.channelIn, aaa, 127]) for player in self.players if player.type in ['human', 'human2']]
+                                player.modules['internalKeyboardQueue'].put([player.channelIn, midiNumberPressed, player.volume])
+                    # [player.modules['internalKeyboardQueue'].put([player.channelIn, aaa, 127]) for player in self.players if player.type in ['human', 'human2']]
                     #print(f"self.ctrlPressed {self.ctrlPressed} kai meta id ouras = {id(self.internalKeyboardAsyncBuffer)} with codent {self.internalKeyboardReaderAsync.queue}")
             except Exception as e:
                 print(f"exception {e} and key is {key}")
@@ -892,9 +954,9 @@ class BachDuet(QWidget):
                     for player in self.players:
                         if player.type in ['human','human2']:
                             if player.internalKeyboardFlag is True:
-                                player.modules['keyboardBuffer'].put([player.channelIn, aaa, 0])
+                                player.modules['internalKeyboardQueue'].put([player.channelIn, aaa, 0])
                     # self.internalKeyboardAsyncBuffer.put([self.players[0].channelIn, aaa, 0])
-                    # [player.modules['keyboardBuffer'].put([player.channelIn, aaa, 0]) for player in self.players if player.type in ['human', 'human2']]
+                    # [player.modules['internalKeyboardQueue'].put([player.channelIn, aaa, 0]) for player in self.players if player.type in ['human', 'human2']]
                     #print(f"self.ctrlPressed {self.ctrlPressed} kai meta id ouras = {id(self.internalKeyboardAsyncBuffer)} with codent {self.internalKeyboardReaderAsync.queue}")
             except:
                 pass
