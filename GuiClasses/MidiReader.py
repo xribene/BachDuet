@@ -237,7 +237,7 @@ class MidiReaderSync(QObject):
 
     """
     midiReaderOutputSignal = pyqtSignal(dict)
-    def __init__(self,  keyboardMidiEventsQueue, audioMidiEventsQueue, parentPlayer):
+    def __init__(self,  keyboardMidiEventsQueue, parentPlayer, audioMidiEventsQueue=None):
         super(MidiReaderSync,self).__init__()
         self.parentPlayer = parentPlayer
         self.params = self.parentPlayer.params 
@@ -263,7 +263,7 @@ class MidiReaderSync(QObject):
         # inputMidiSource can be either the Midi Keyboard, or Audio input
         # TODO get it from attributes of parentPlayer
         self.inputMidiSource = 'Midi Keyboard' 
-        self.inputMidiSource = 'Audio Mic'
+        # self.inputMidiSource = 'Audio Mic'
 
     @pyqtSlot(dict) 
     def getNewMidiEvent(self,  clockTrigger):

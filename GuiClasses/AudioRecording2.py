@@ -14,8 +14,9 @@ from PyQt5.QtWidgets import (QApplication, QCheckBox, QComboBox, QDateTimeEdit,
         QSlider, QSpinBox, QStyleFactory, QTableWidget, QTabWidget, QTextEdit,
         QVBoxLayout, QWidget,QLCDNumber, QDoubleSpinBox)
 from PyQt5.QtCore import QObject, pyqtSignal, QTimer, Qt, pyqtSlot, QThread
-import scipy.io.wavfile
-import scipy.io
+# import scipy.io.wavfile
+# import soundfile as sf
+# import scipy.io
 import numpy as np
 # import matplotlib.pyplot as plt
 import time

@@ -204,19 +204,20 @@ class StaffPainter(QObject):
                 #keyItem.setGeometry(self.lastHorizontalPos, 20, 20,20)
                 realKeyString = keyString.split(" ")[0]+'m' if 'minor' in keyString else keyString.split(" ")[0]
                 print(realKeyString)
-                svg_str = f"""
-                <svg height="20" width="20">
-                <text x="0" y="10" style="font-style:normal;font-weight:bold;letter-spacing:0px;word-spacing:0px;fill:#4a85c4;fill-opacity:1;stroke:none;stroke-width:0.26458332">{realKeyString}</text>
-                </svg>
-                """
-                svg_bytes = bytearray(svg_str, encoding='utf-8')
-                svgItem = QtSvg.QGraphicsSvgItem()
-                renderer = QtSvg.QSvgRenderer()
-                renderer.load(svg_bytes)
-                svgItem.setSharedRenderer(renderer)
-                svgItem.setPos(self.lastHorizontalPos, 5)
-                svgItem.scale(2,2)
-                self.sendNoteItemToMain.emit([svgItem],1) # TODO
+                if realKeyString != 'None' and realKeyString is not None:
+                    svg_str = f"""
+                    <svg height="20" width="20">
+                    <text x="0" y="10" style="font-style:normal;font-weight:bold;letter-spacing:0px;word-spacing:0px;fill:#4a85c4;fill-opacity:1;stroke:none;stroke-width:0.26458332">{realKeyString}</text>
+                    </svg>
+                    """
+                    svg_bytes = bytearray(svg_str, encoding='utf-8')
+                    svgItem = QtSvg.QGraphicsSvgItem()
+                    renderer = QtSvg.QSvgRenderer()
+                    renderer.load(svg_bytes)
+                    svgItem.setSharedRenderer(renderer)
+                    svgItem.setPos(self.lastHorizontalPos, 5)
+                    svgItem.scale(2,2)
+                    self.sendNoteItemToMain.emit([svgItem],1) # TODO
                 # # self.updateStaffView([svgItem],1)
                 # for item in [svgItem]:
                 #     self.staffView.staffScene.addItem(item)
