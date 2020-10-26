@@ -38,6 +38,7 @@ class PianoRollPainter(QObject):
 
     @pyqtSlot(int,int)       
     def updatePlot(self, dnnNote, keyNote):
+        
         self.busDnn.append(dnnNote)
         self.busMidiKeyboard.append(keyNote)
         currentKeyBus = list(self.busMidiKeyboard)
@@ -71,5 +72,6 @@ class PianoRollPainter(QObject):
         ss = 450
         #print(np.linspace(ss,ss+len(data1),len(data1)))
         #print(data1)
+        print("INSIDE PLOTTER PIANOROLL")
         self.pianoRollView.plotCurve1.setData(np.linspace(ss,ss+len(data1),len(data1)), data1,connect="finite", pen=pg.mkPen(color=(74, 133, 196),width=4))
         self.pianoRollView.plotCurve2.setData(np.linspace(ss,ss+len(data2),len(data2)), data2,connect="finite", pen=pg.mkPen(color=(0, 128, 0),width=4))

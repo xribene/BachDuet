@@ -5,7 +5,7 @@ Created on Sun May 19 05:08:43 2019
 @author: xribene
 """
 
-import pyaudio
+# import pyaudio
 import wave
 from PyQt5 import QtGui, QtCore
 from PyQt5.QtWidgets import (QApplication, QCheckBox, QComboBox, QDateTimeEdit,

@@ -1,4 +1,4 @@
-import pyaudio
+# import pyaudio
 import wave
 from PyQt5 import QtGui, QtCore
 from PyQt5.QtWidgets import (QApplication, QCheckBox, QComboBox, QDateTimeEdit,

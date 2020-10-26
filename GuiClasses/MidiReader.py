@@ -270,7 +270,7 @@ class MidiReaderSync(QObject):
 
         metronomeBPM = clockTrigger['metronomeBPM']
         # This line is very important here. #TODO add comments
-        self.parentPlayer.modules['syncThread'].msleep(60/metronomeBPM/4/2*1000)
+        self.parentPlayer.modules['syncThread'].msleep(int(60/metronomeBPM/4/2*1000))
 
         tick = clockTrigger['tick']
         rhythmToken = clockTrigger['rhythmToken']
