@@ -263,14 +263,15 @@ class MidiReaderSync(QObject):
         # inputMidiSource can be either the Midi Keyboard, or Audio input
         # TODO get it from attributes of parentPlayer
         self.inputMidiSource = 'Midi Keyboard' 
-        self.inputMidiSource = 'Audio Mic'
+        # self.inputMidiSource = 'Audio Mic'
 
     @pyqtSlot(dict) 
     def getNewMidiEvent(self,  clockTrigger):
 
         metronomeBPM = clockTrigger['metronomeBPM']
         # This line is very important here. #TODO add comments
-        self.parentPlayer.modules['syncThread'].msleep(60/metronomeBPM/4/2*1000)
+
+        self.parentPlayer.modules['syncThread'].msleep(int(60/metronomeBPM/4/2*1000))
 
         tick = clockTrigger['tick']
         rhythmToken = clockTrigger['rhythmToken']

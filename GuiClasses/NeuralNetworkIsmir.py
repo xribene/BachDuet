@@ -347,6 +347,7 @@ class NeuralNetSync(QObject):
         rhythmToken = clockTriger['rhythmToken']
         globalTick = clockTriger['globalTick']
         try:
+            output = {}
             while not self.currentDnnNote.empty():
                 output = self.currentDnnNote.get(block = False)
             #print(self.currentDnnNote.empty())
