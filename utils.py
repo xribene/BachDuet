@@ -12,7 +12,7 @@ from ParsingClasses import Note as Note2# from music21 import stream , instrumen
 # from visdom import Visdom
 from pathlib import Path
 import pickle
-from music21 import *
+# from music21 import *
 # import matplotlib.pyplot as plt
 
 def part2Tensor(part,vocabMidiArticGlobal,vocabRhythmGlobal):

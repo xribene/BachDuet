@@ -237,7 +237,7 @@ class MidiReaderSync(QObject):
 
     """
     midiReaderOutputSignal = pyqtSignal(dict)
-    def __init__(self,  keyboardMidiEventsQueue, audioMidiEventsQueue, parentPlayer):
+    def __init__(self,  keyboardMidiEventsQueue, parentPlayer, audioMidiEventsQueue=None):
         super(MidiReaderSync,self).__init__()
         self.parentPlayer = parentPlayer
         self.params = self.parentPlayer.params 
@@ -270,7 +270,6 @@ class MidiReaderSync(QObject):
 
         metronomeBPM = clockTrigger['metronomeBPM']
         # This line is very important here. #TODO add comments
-
         self.parentPlayer.modules['syncThread'].msleep(int(60/metronomeBPM/4/2*1000))
 
         tick = clockTrigger['tick']

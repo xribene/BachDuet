@@ -38,6 +38,8 @@ class PianoRollPainter(QObject):
 
     @pyqtSlot(int,int)       
     def updatePlot(self, dnnNote, keyNote):
+        
+        print(f"new Dnn Note is {dnnNote} and keyNote {keyNote}")
         self.busDnn.append(dnnNote)
         self.busMidiKeyboard.append(keyNote)
         currentKeyBus = list(self.busMidiKeyboard)
@@ -66,10 +68,25 @@ class PianoRollPainter(QObject):
         data2 = np.array(plotDataDnn, dtype = np.float32) # 5835
         data2[data2==18] = np.nan
         data1[data1==18] = np.nan
-        if not self.showMidiKeyboardFlag:
-            data1[data1!=1] = np.nan
+        # if not self.showMidiKeyboardFlag:
+        #     data1[data1!=1] = np.nan
         ss = 450
         #print(np.linspace(ss,ss+len(data1),len(data1)))
         #print(data1)
+        # print("INSIDE PLOTTER PIANOROLL")
+        # print(f"\n\n data1 {data1}")
+        # print(f"\n\n data2 {data2}")
+
+        # if pg.Qt.VERSION_INFO.split(' ')[0] in ['PySide2', 'PyQt5']:
+        #     con = np.isfinite(data1)
+        #     data1[~con] = 0
+        #     # pg.plot(data1, title="NaN", connect=np.logical_and(con, np.roll(con, -1)))
+        #     self.pianoRollView.plotCurve1.setData(np.linspace(ss,ss+len(data1),len(data1)), data1,connect="finite", pen=pg.mkPen(color=(74, 133, 196),width=4, connect=np.logical_and(con, np.roll(con, -1))))
+
+        # else:
+        #     # pg.plot(data1, title="NaN", connect='finite')
+        #     self.pianoRollView.plotCurve1.setData(np.linspace(ss,ss+len(data1),len(data1)), data1,connect="finite", pen=pg.mkPen(color=(74, 133, 196),width=4))
+
+
         self.pianoRollView.plotCurve1.setData(np.linspace(ss,ss+len(data1),len(data1)), data1,connect="finite", pen=pg.mkPen(color=(74, 133, 196),width=4))
         self.pianoRollView.plotCurve2.setData(np.linspace(ss,ss+len(data2),len(data2)), data2,connect="finite", pen=pg.mkPen(color=(0, 128, 0),width=4))

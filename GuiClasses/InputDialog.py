@@ -1,15 +1,4 @@
-from PyQt5 import QtGui, QtCore, QtSvg
-from PyQt5.QtWidgets import (QMainWindow, QApplication, QCheckBox, QComboBox, QDateTimeEdit,QMessageBox,
-        QDial, QDialog, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit,
-        QProgressBar, QPushButton, QRadioButton, QScrollBar, QSizePolicy, QDialogButtonBox,
-        QSlider, QSpinBox, QStyleFactory, QTableWidget, QTabWidget, QTextEdit, QSplashScreen,
-        QVBoxLayout, QWidget,QLCDNumber, QDoubleSpinBox,QGraphicsItem, QGraphicsItemGroup, QGraphicsEllipseItem, QGraphicsObject, QGraphicsLineItem,
-                         QGraphicsScene, QGraphicsView, QStyle, QWidget, QLabel, QHBoxLayout, QMenuBar, QTextEdit, QFormLayout, QGridLayout, QAction, QActionGroup, QToolBar, QToolBox, QToolButton)
-from PyQt5.QtCore import QObject, pyqtSignal, QTimer, Qt, pyqtSlot, QThread, QPointF, QRectF, QLineF, QRect
-from PyQt5.QtGui import (QPen, QTransform, QPixmap)
-from PyQt5.QtSvg import QGraphicsSvgItem
-import pyqtgraph as pg
-from pyqtgraph.Qt import QtGui
+from PyQt5.QtWidgets import QDialog, QDialogButtonBox, QFormLayout, QLineEdit
 
 class InputDialog(QDialog):
     def __init__(self, parent=None, humanPlayers = 1):
@@ -35,17 +24,3 @@ class InputDialog(QDialog):
             output[f'fullName {i+1}'] = line.text()
         output['comments'] = self.comments.text()
         return output
-
-if __name__ == '__main__':
-
-    import sys
-    app = QApplication(sys.argv)
-    dialog = InputDialog()
-    if dialog.exec():
-        print(dialog.getInputs())
-    exit(0)
-'''
-katarxas tha vazei onoma epitheto
-imerominia  thn krataw etsi ki alliws
-add it to subjects
-'''

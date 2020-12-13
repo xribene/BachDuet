@@ -7,8 +7,6 @@ python main.py
 
 """
 
-# fbs import
-#from fbs_runtime.application_context import ApplicationContext
 # pyQt5 imports
 from PyQt5 import QtGui, QtCore, QtSvg
 from PyQt5.QtWidgets import (QMainWindow, QApplication, QCheckBox, QComboBox, QDateTimeEdit,QMessageBox,
@@ -173,7 +171,6 @@ class BachDuet(QWidget):
         self.storagePath = self.cwd / self.config.storagePath
         self.appctxt = appctxt
         self.ctrlPressed = False
-        
         # notesPainterDict is used for displaying the notes on the Staves,
         # and it contains all the information about each notes position in the Staff
         # as well as their spellin given different key configurations.
@@ -181,13 +178,11 @@ class BachDuet(QWidget):
             self.notesDict = pickle.load(handle)
         # initiates the event loop. event filter is an object that receives all 
         # events that are sent to this object. This function is inherited
-        # from QWidget class
         self.installEventFilter(self)
         # set the QIcon of the App
         self.setWindowIcon(QtGui.QIcon(self.appctxt.get_resource('Images/bachDuetIconYellow1024.png')))
         # display the splashScreen
         self.showSplashScreen()
-
         self.showModeWindow()
 
     def showSplashScreen(self):
@@ -199,7 +194,7 @@ class BachDuet(QWidget):
         # Sets the background as transparent (I think)
         self.splash.setMask(splash_pix.mask())
         # show the window for 1 second.
-        # TODO find a better way instead of time.sleep, so the 
+        # TODO use a single shot timer, instead of time.sleep, so the 
         # rest of the processes are not bloked. 
         self.splash.show()
         time.sleep(1)
@@ -216,7 +211,7 @@ class BachDuet(QWidget):
     
     @pyqtSlot(int)
     def setupBachDuet(self, buttonInd):
-        #TODO find a way to remove the if blocks
+        #TODO remove the if blocks
         self.modeWindow.hide()
         # current time is used to time annotate the saved data
         now = datetime.now()
@@ -240,7 +235,7 @@ class BachDuet(QWidget):
             self.player1 = Player( name = fields['fullName 1'], type = 'human', params = self.params, realTimeInput = True, inputType = 'midi', modules = {}, holdFlag = False)
             self.player2 = Player( type = 'machine', params = self.params, realTimeInput = False, inputType = None, modules = {}, holdFlag = None)
             self.player3 = Player( type = 'metronome', params = self.params, realTimeInput = False, inputType = None, modules = {}, holdFlag = None)
-            self.players = [self.player1, self.player2, self.player3]
+            
             self.sessionName = 'Human Vs Machine'
             # initial BPM is loaded from the params.
             self.initBPM = self.params['metronome']["BPM"]  
@@ -252,7 +247,6 @@ class BachDuet(QWidget):
             self.player1 = Player( type = 'machine', params = self.params, realTimeInput = False, inputType = None, modules = {}, holdFlag = None)
             self.player2 = Player( type = 'machine2', params = self.params, realTimeInput = False, inputType = None, modules = {}, holdFlag = None)
             self.player3 = Player( type = 'metronome', params = self.params, realTimeInput = False, inputType = None, modules = {}, holdFlag = None)
-            self.players = [self.player1, self.player2, self.player3]
             self.initBPM = self.params['metronome']["BPM"]
             self.sessionName = 'Machine Vs Machine'
             
@@ -277,11 +271,11 @@ class BachDuet(QWidget):
             self.player1 = Player( type = 'human', params = self.params, realTimeInput = True, inputType = 'midi', modules = {}, holdFlag = False)
             self.player2 = Player( type = 'human2', params = self.params, realTimeInput = True, inputType = 'midi', modules = {}, holdFlag = False)
             self.player3 = Player( type = 'metronome', params = self.params, realTimeInput = False, inputType = None, modules = {}, holdFlag = None)
-            self.players = [self.player1, self.player2, self.player3]
             self.sessionName = 'Human Vs Human'
             self.initBPM = self.params['metronome']["BPM"]
         # for each player open a new midi output port.
         # only human player class has midi input.
+        self.players = [self.player1, self.player2, self.player3]
         for player in self.players : 
             player.midiOut = rtmidi.MidiOut()
             if 'human' in player.type : 
@@ -291,7 +285,7 @@ class BachDuet(QWidget):
         self.initUi()
         # initialize all threads
         self.setupThreads()
-        # define signals slots namely the communication rules
+        # define signals slots, namely the communication rules
         # between threads.
         self.signalsNslots()
         # detect available midi input and output devices
@@ -333,8 +327,8 @@ class BachDuet(QWidget):
         self.createPianoRollGroup()
         self.createStaffGroup()
         # self.createMiscGroup()
-        self.mixer = Mixer(self.players, self.params, self.appctxt,self) # TODO 
-        self.preferences = Preferences(self.players, self.params,self.appctxt,self) # TODO
+        self.mixer = Mixer(self.players, self.params, self.appctxt,self) # TODO not functional
+        self.preferences = Preferences(self.players, self.params,self.appctxt,self) 
         self.menuBar = MenuBar(self)
         self.toolbar = ToolBar(appctxt = self.appctxt, parent = self, params = self.params)
         mainLayout = QGridLayout(self) 
@@ -342,10 +336,11 @@ class BachDuet(QWidget):
         mainLayout.addWidget(self.toolbar, 0,0,3,1, Qt.AlignLeft|Qt.AlignTop)
         mainLayout.addWidget(self.staffGroup, 1,0,6,1)
         mainLayout.addWidget(self.pianoRollGroup, 7,0,15,1)
-        #mainLayout.addWidget(self.othersGroup, 3,0,1,1)
+        # mainLayout.addWidget(self.othersGroup), 3,0,1,1)
         self.setLayout(mainLayout)
+
     def createMiscGroup(self): 
-        # NOTUSED
+        # TODO NOT USED FOR NOW
         self.othersGroup = QGroupBox("Other")
         self.timeSignatureComboBox = QComboBox(self)
         self.timeSignatureComboBox.addItems(['2/4','3/4','4/4','3/8','4/8','6/8','9/8','12/8'])
@@ -364,7 +359,7 @@ class BachDuet(QWidget):
         layout.addWidget(self.pianoRollView, 0, 0)
         self.pianoRollGroup.setLayout(layout)
     def createStaffGroup(self):
-        # TODO This thing here needs to create as many staffs as the players (or the given conditioned voices)
+        # TODO StaffView needs to create as many staffs as the players 
         self.staffGroup = QGroupBox("Staff", self)
         self.staffView = StaffView(appctxt = self.appctxt, parent=self)
         self.humanLabel = QLabel("H")
@@ -379,7 +374,6 @@ class BachDuet(QWidget):
         self.staffGroup.setLayout(layout)
 
     def setupThreads(self):
-        #TODO 
         self.currentAudioFrame = Queue()
         self.currentAudioNote = Queue()
         self.audioMidiEventsQueue = Queue()
@@ -400,31 +394,31 @@ class BachDuet(QWidget):
                 rate = 16000
                 chunk = 1024
                 # set up AudioRecorder module for each human
-                tempAudioFramesQueue = Queue()
-                tempAudioRecorder = AudioRecorder(audioFramesQueue =  tempAudioFramesQueue,
-                                                  parentPlayer = player, 
-                                                  chunk = chunk, # read this from json file instead
-                                                  rate = rate)
+                # tempAudioFramesQueue = Queue()
+                # tempAudioRecorder = AudioRecorder(audioFramesQueue =  tempAudioFramesQueue,
+                #                                   parentPlayer = player, 
+                #                                   chunk = chunk, # read this from json file instead
+                #                                   rate = rate)
                 # set up pitchEstimator module for each human
-                tempPitchEstimationsQueue = Queue()
-                tempPitchEstimatorThread = QThread()
+                # tempPitchEstimationsQueue = Queue()
+                # tempPitchEstimatorThread = QThread()
                 # tempPitchEstimator = YinEstimator(audioFramesQueue = tempAudioFramesQueue, 
                 #                                   pitchEstimationsQueue = tempPitchEstimationsQueue, 
                 #                                   parentPlayer = player, appctxt = self.appctxt,
                 #                                   medianOrder=5, rate = rate)
-                tempPitchEstimator = CrepeEstimator(audioFramesQueue = tempAudioFramesQueue, 
-                                                  pitchEstimationsQueue = tempPitchEstimationsQueue, 
-                                                  parentPlayer = player, appctxt = self.appctxt
-                                                  )
+                # tempPitchEstimator = CrepeEstimator(audioFramesQueue = tempAudioFramesQueue, 
+                #                                   pitchEstimationsQueue = tempPitchEstimationsQueue, 
+                #                                   parentPlayer = player, appctxt = self.appctxt
+                #                                   )
 
-                tempPitchEstimator.moveToThread(tempPitchEstimatorThread)
+                # tempPitchEstimator.moveToThread(tempPitchEstimatorThread)
 
                 # set up Audio2MidiEvents module for each human
-                tempAsyncAudioThread = QThread()
+                # tempAsyncAudioThread = QThread()
                 tempAsyncAudioQueue = Queue()
-                tempAsyncAudio = Audio2MidiEvents( pitchEstimationsQueue = tempPitchEstimationsQueue,
-                                                   audioMidiEventsQueue = tempAsyncAudioQueue, 
-                                                   parentPlayer = player)
+                # tempAsyncAudio = Audio2MidiEvents( pitchEstimationsQueue = tempPitchEstimationsQueue,
+                #                                    audioMidiEventsQueue = tempAsyncAudioQueue, 
+                #                                    parentPlayer = player)
                 # set up MidiKeyboardReaderAsync
                 # there is not thread for the async module of human players
                 # (MidiKeyboardReaderAsync) since it uses a timer to run periodicaly 
@@ -440,19 +434,19 @@ class BachDuet(QWidget):
                 # reads the input from tempAsyncQueue and the tempAsyncAudioQueue
                 tempSyncThread = QThread()
                 tempSync = MidiReaderSync(keyboardMidiEventsQueue = tempAsyncQueue,  
-                                          audioMidiEventsQueue = tempAsyncAudioQueue,
+                                        #   audioMidiEventsQueue = tempAsyncAudioQueue,
                                           parentPlayer = player)
                 tempSync.moveToThread(tempSyncThread)
-                modules['audioFramesQueue'] = tempAudioFramesQueue
-                modules['audioRecorderModule'] = tempAudioRecorder
+                # modules['audioFramesQueue'] = tempAudioFramesQueue
+                # modules['audioRecorderModule'] = tempAudioRecorder
 
-                modules['pitchEstimationsQueue'] = tempPitchEstimationsQueue
-                modules['pitchEstimatorThread'] = tempPitchEstimatorThread
-                modules['pitchEstimatorModule'] = tempPitchEstimator
+                # modules['pitchEstimationsQueue'] = tempPitchEstimationsQueue
+                # modules['pitchEstimatorThread'] = tempPitchEstimatorThread
+                # modules['pitchEstimatorModule'] = tempPitchEstimator
 
-                modules['asyncAudioThread'] = tempAsyncAudioThread
-                modules['asyncAudioQueue'] = tempAsyncAudioQueue
-                modules['asyncAudioModule'] = tempAsyncAudio
+                # modules['asyncAudioThread'] = tempAsyncAudioThread
+                # modules['asyncAudioQueue'] = tempAsyncAudioQueue
+                # modules['asyncAudioModule'] = tempAsyncAudio
 
                 modules['asyncQueue'] = tempAsyncQueue
                 modules["asyncModule"] = tempAsync
@@ -882,7 +876,7 @@ class BachDuet(QWidget):
         for player in self.players:
             if player.type == 'human':
                 player.modules['asyncModule'].stopit()
-                player.modules['asyncAudioModule'].stopit()
+                # player.modules['asyncAudioModule'].stopit()
             if player.type in ['machine']:
                 #TODO replace this with signal and slot
                 player.modules['asyncModule'].hidden2pickle()

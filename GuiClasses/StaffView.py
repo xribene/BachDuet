@@ -29,10 +29,10 @@ class StaffView(QtGui.QGraphicsView):
         self.setScene(self.staffScene)
         self.setAlignment(Qt.AlignTop | Qt.AlignLeft)
         # image = QtGui.QImage("paperTexture.jpg")
-        backGroundPath = Path(appctxt.get_resource('Images\paperTextureWhite.jpg'))
+        backGroundPath = Path(appctxt.get_resource('Images/paperTextureWhiteRes.jpg'))
         backGroundPath = backGroundPath.as_posix()
-        self.setStyleSheet(f"background-image: url({backGroundPath}); background-attachment: fixed")
-
+        self.setStyleSheet(f"background-image:url({backGroundPath}); background-attachment:fixed")
+        # print(backGroundPath)
         #self.setDragMode(QtGui.QGraphicsView.ScrollHandDrag)
         #self.setTransformationAnchor(QtGui.QGraphicsView.AnchorUnderMouse)
         self.setTransformationAnchor(QtGui.QGraphicsView.NoAnchor)
