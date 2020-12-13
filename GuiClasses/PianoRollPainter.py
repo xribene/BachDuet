@@ -77,6 +77,9 @@ class PianoRollPainter(QObject):
         # print(f"\n\n data1 {data1}")
         # print(f"\n\n data2 {data2}")
 
+
+        # TODO https://github.com/pyqtgraph/pyqtgraph/issues/1057
+        
         # if pg.Qt.VERSION_INFO.split(' ')[0] in ['PySide2', 'PyQt5']:
         #     con = np.isfinite(data1)
         #     data1[~con] = 0
