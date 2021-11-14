@@ -11,7 +11,7 @@ import numpy as np
 from pathlib import Path
 from PyQt5.QtCore import (QPointF, QRectF, QLineF, QRect, Qt, QObject, pyqtSignal, pyqtSlot)
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QGraphicsItem, QGraphicsItemGroup, QGraphicsEllipseItem, QGraphicsObject, QGraphicsLineItem,
-                         QGraphicsScene, QGraphicsView, QStyle, QWidget, QLabel, QHBoxLayout, QMenuBar, QTextEdit, QGridLayout )
+                         QGraphicsScene, QGraphicsView, QStyle, QWidget, QLabel, QHBoxLayout, QMenuBar, QTextEdit, QGridLayout, QGraphicsPixmapItem )
 from PyQt5.QtGui import (QPen, QTransform)
 from PyQt5 import QtGui, QtCore, QtSvg
 from PyQt5.QtSvg import QGraphicsSvgItem
@@ -35,7 +35,7 @@ class PianoRollView(pg.PlotWidget):
         self.getPlotItem().hideAxis('left')
 
         image = QtGui.QPixmap(self.appctxt.get_resource('Images/keysBackGrey.png'))
-        keysImg = QtGui.QGraphicsPixmapItem(image)
+        keysImg = QGraphicsPixmapItem(image)
         keysImg.setZValue(-100)
 
         self.invertX(True)

@@ -18,11 +18,11 @@ from PyQt5.QtSvg import QGraphicsSvgItem
 from GuiClasses.StaffItem import *
 #from GraphicsItems.NoteItem import *
 
-class StaffView(QtGui.QGraphicsView):
+class StaffView(QGraphicsView):
     startStaffPainterSignal = pyqtSignal()
     updatePaintersRectSignal = pyqtSignal(float)
     def __init__(self,appctxt, parent):
-        QtGui.QGraphicsView.__init__(self, parent)
+        QGraphicsView.__init__(self, parent)
         self.parent = parent
         self.setMouseTracking(True)
         self.staffScene = QGraphicsScene(self)
@@ -35,7 +35,7 @@ class StaffView(QtGui.QGraphicsView):
         # print(backGroundPath)
         #self.setDragMode(QtGui.QGraphicsView.ScrollHandDrag)
         #self.setTransformationAnchor(QtGui.QGraphicsView.AnchorUnderMouse)
-        self.setTransformationAnchor(QtGui.QGraphicsView.NoAnchor)
+        self.setTransformationAnchor(QGraphicsView.NoAnchor)
         self.viewport().setCursor(QtCore.Qt.CrossCursor)
         self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
