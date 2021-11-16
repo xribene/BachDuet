@@ -111,6 +111,18 @@ class Clock(QObject):
                 # used to reduce the CPU usage. If ommited, temperature
                 # rises to max. 
                 time.sleep(0.02)
+    def singleRun(self):
+        clockTriger = {
+            'tick' : self.tick,
+            'rhythmToken' : self.rhythmTokens[self.tick],
+            'metronomeBPM' : self.metronomeBPM,
+            'globalTick' : self.globalTick
+        }
+        self.tick += 1 
+        self.globalTick +=1
+        if self.tick == self.dur:
+            self.tick = 0
+        return clockTriger
  
 class TempoEstimator(QObject):
     """Currently not used."""

@@ -21,7 +21,8 @@ import json
 from collections import deque
 
 class NeuralNet(QObject):  
-    def __init__(self, currentDnnNote, notesDict, appctxt, parentPlayer, parent):
+    def __init__(self, currentDnnNote, notesDict, 
+                    appctxt, parentPlayer, parent, seed=None):
         super(NeuralNet, self).__init__()
         self.appctxt = appctxt
         self.parentPlayer = parentPlayer
@@ -31,7 +32,7 @@ class NeuralNet(QObject):
         self.notesDict = notesDict
         self.device = torch.device('cpu')#('cuda:0' if torch.cuda.is_available() else 'cpu')
         self.currentDnnNote = currentDnnNote
-
+        
         # tensor buffers for the 4 types of input that go in the NN. 
         # the size in the time axis is 4, but currently the NN accepts only 1 every timestep 
         self.tensorBuffer = TensorBuffer(maxLen=4, shape = [2,1], restIndex=self.restTokenIndex, device=self.device)
@@ -52,7 +53,7 @@ class NeuralNet(QObject):
         self.useCondition = False
         self.condition = None
         self.insideCondition = False
-        self.initializeModel()
+        self.initializeModel(seed=seed)
         self.info = {
             'type' : self.parentPlayer.type,
             'name' : self.parentPlayer.name,
@@ -71,7 +72,7 @@ class NeuralNet(QObject):
         denom = int(denom)
         self.timeSignature = timeSignature
         self.dur = nom*(16//denom)
-    def initializeModel(self):
+    def initializeModel(self, seed):
         self.midiModelPath = 'Checkpoints/saved_svine_last.pt'
         self.keyModelPath = 'Checkpoints/saved_frozen_best_SkipCond1271.pt'
         loadedCheckpointMidi = torch.load(self.appctxt.get_resource(self.midiModelPath),map_location=self.device)
@@ -83,7 +84,9 @@ class NeuralNet(QObject):
                     numLayersMidiLSTM=argsMidi.lstmLayers, hiddenSize=argsMidi.hiddenSize,
                     embSizePitchClass = argsMidi.embSizePitchClass, vocabSizePitchClass = 13,
                     embSizeRhythm = argsMidi.embSizeRhythm, vocabSizeRhythm = 10,  
-                    concatInputs = argsMidi.concatInputs , voices = argsMidi.voices, includeRhythm = argsMidi.includeRhythm, initHiddenZeros=0)#argsMidi.initHiddenZeros)#, stackSize = 32)#args.initHiddenZeros )initHiddenZeros = 1)#
+                    concatInputs = argsMidi.concatInputs , voices = argsMidi.voices, 
+                    includeRhythm = argsMidi.includeRhythm, 
+                    initHiddenZeros=0)#argsMidi.initHiddenZeros)#, stackSize = 32)#args.initHiddenZeros )initHiddenZeros = 1)#
         self.modelKey = ModelKey(dropoutKey=argsKey.dropoutKey, 
                             numLayersKeyLSTM=argsKey.lstmLayersKey, hiddenSizeKey=argsKey.hiddenSizeKey,
                             vocabSizeKey = 24, embSizeKeys = 25, includeKeys = 0, initKeys = 0,
@@ -102,20 +105,26 @@ class NeuralNet(QObject):
                                                 #device = self.device, typeTensor = 'float')
         self.hiddenListBad = []
         self.hiddenListGood = []
-        self.initHiddenStates()
+        self.initHiddenStates(seed=seed)
 
     @pyqtSlot(str)
     def selectModel(self, value):
         pass
 
     @pyqtSlot()
-    def initHiddenStates(self):
+    def initHiddenStates(self, seed = None):
         #torch.manual_seed(554)
         # if self.first == 0 :
         #     with open("hiddenGoodInitBass", 'rb') as hidGood :
         #         self.hiddenMidi = pickle.load(hidGood)
         #     self.first =1
         # else:
+        print("inside hidden states init")
+        print(seed)
+        if seed is not None:
+            torch.manual_seed(seed)
+            print(f"used seed {seed}")
+
         self.hiddenMidi = self.modelMidi.init_hiddenMidi(1,self.device)
         self.hiddenKey = self.modelKey.init_hiddenKey(1,self.device)
         self.prevPredictionTokenIndex = self.vocabMidiArticGlobal.token2index['0_1']#self.restTokenIndex
@@ -216,7 +225,7 @@ class NeuralNet(QObject):
                 #note = pitch.Pitch(midi = int(currentKeyMidi))
                 #pitchClassName = note.name
                 #fullName = note.nameWithOctave
-                print(f"midi is {currentKeyMidi} and type is {currentKeyMidi.__class__}")
+                # print(f"midi is {currentKeyMidi} and type is {currentKeyMidi.__class__}")
                 currentKeyPitchClassIndex = int(self.notesDict[currentKeyMidi]['primary']['cpc'])
                 #currentKeyPitchClassIndex = note.pitchClass
             else:
@@ -279,7 +288,7 @@ class NeuralNet(QObject):
             midiLogits = outputMidi['midi']['midiBeforeFc']
             #midiLogits = midiLogits.detach()
             self.hiddenMidi = outputMidi['hiddenOut']['midi']
-
+            # print(torch.mean(self.hiddenMidi[0]))
             outputKey = self.modelKey( key, midiLogits,1, hiddenKey = self.hiddenKey, device = self.device)
             self.hiddenKey = outputKey['hiddenOut']['key']
             predictedKeyLogits = outputKey['key']['logits']  
@@ -308,7 +317,7 @@ class NeuralNet(QObject):
             #print("****************************************************************")
             #print(f"*******************{self.vocabKeysGlobal.index2token[self.prevPredictionTokenIndexKey]}******************************************")
             #self.prevPredictionTokenIndexPC = pitch.Pitch(midi = int(predictedMidi)).pitchClass
-            self.parent.toolbar.keyIndicator.setText(self.vocabKeysGlobal.index2token[self.prevPredictionTokenIndexKey])
+            # LAST : self.parent.toolbar.keyIndicator.setText(self.vocabKeysGlobal.index2token[self.prevPredictionTokenIndexKey])
             self.prevPredictionTokenIndexPC =  int(self.notesDict[int(predictedMidi)]['primary']['cpc'])
             
             
@@ -330,9 +339,13 @@ class NeuralNet(QObject):
                 "midi" : int(predictedMidi),
                 "artic":  int(predictedHit),
                 "tick": currentKeyTick+1,
-                "rhythmToken": None
+                "rhythmToken": None,
+                "logits" : predictedLogits
             }
             self.currentDnnNote.put(output)
+
+        # print(f"{output['midi']} _ {output['artic']}")
+        # print(f" {torch.mean(predictedLogits)}")
         #print(f"TIME ELAPSED for NN is {time.time()-ee}")
 class NeuralNetSync(QObject):
     neuralNetSyncOutputSignal = pyqtSignal(dict)

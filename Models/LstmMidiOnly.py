@@ -103,6 +103,8 @@ class Model(torch.nn.Module):
             pitchClass = pitchClass[:,0,:]
         # embeddings for midi , pitch , rhythm
         midiEmb = self.embMidi(midi) # batch x voice x window x embSize
+        # print(f"midiEmb {torch.mean(midiEmb)}")
+
         pitchClassEmb = self.embPitchClass(pitchClass) # batch x voice x window x embSizePitchClass
         rhythmEmb = self.embRhythm(rhythm) # batch x 1 x window x embSizeRhythm
 
@@ -131,7 +133,7 @@ class Model(torch.nn.Module):
         # Load embs in the two LSTMs
         # First for midi LSTM 
         totalInp = self.dropoutEmb(totalInp) #+ pitchClassEmb
-        
+        # print(f"totalInp {torch.mean(totalInp)}")
         lstmOutMidi, hiddenOutMidi = self.LstmMidi(totalInp, hiddenMidi) 
         #lstmOutRhythm, hiddenOutRhythm = self.LstmRhythm(inputRhythmLstm, hiddenRhythm) 
 
