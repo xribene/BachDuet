@@ -1,20 +1,8 @@
-from PyQt5 import QtGui, QtCore
-from PyQt5.QtWidgets import (QApplication, QCheckBox, QComboBox, QDateTimeEdit,
-        QDial, QDialog, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit,
-        QProgressBar, QPushButton, QRadioButton, QScrollBar, QSizePolicy,
-        QSlider, QSpinBox, QStyleFactory, QTableWidget, QTabWidget, QTextEdit,
-        QVBoxLayout, QWidget,QLCDNumber, QDoubleSpinBox)
-from PyQt5.QtCore import QObject, pyqtSignal, QTimer, Qt, pyqtSlot, QThread
+from PyQt5 import QtGui
 import pyqtgraph as pg
 from pyqtgraph.Qt import QtGui
-import numpy as np
-from pathlib import Path
-from PyQt5.QtCore import (QPointF, QRectF, QLineF, QRect, Qt, QObject, pyqtSignal, pyqtSlot)
-from PyQt5.QtWidgets import (QApplication, QMainWindow, QGraphicsItem, QGraphicsItemGroup, QGraphicsEllipseItem, QGraphicsObject, QGraphicsLineItem,
-                         QGraphicsScene, QGraphicsView, QStyle, QWidget, QLabel, QHBoxLayout, QMenuBar, QTextEdit, QGridLayout, QGraphicsPixmapItem )
-from PyQt5.QtGui import (QPen, QTransform)
-from PyQt5 import QtGui, QtCore, QtSvg
-from PyQt5.QtSvg import QGraphicsSvgItem
+from PyQt5.QtWidgets import QGraphicsPixmapItem 
+from PyQt5 import QtGui
 from GuiClasses.StaffItem import *
 import pyqtgraph as pg
 #from GraphicsItems.NoteItem import *

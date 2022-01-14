@@ -96,7 +96,7 @@ class Model(torch.nn.Module):
         else:
             hiddenMidi = self.repackage_hidden(hiddenMidi)
         
-        
+        print(f"input is {midi} {pitchClass} {rhythm}")
         # keep only the first voice for MONO
         if self.voices == 1:
             midi = midi[:,0,:]#.unsqueeze(1) # this is only because of mono
@@ -133,7 +133,7 @@ class Model(torch.nn.Module):
         # Load embs in the two LSTMs
         # First for midi LSTM 
         totalInp = self.dropoutEmb(totalInp) #+ pitchClassEmb
-        # print(f"totalInp {torch.mean(totalInp)}")
+        print(f"totalInp {torch.mean(totalInp)}")
         lstmOutMidi, hiddenOutMidi = self.LstmMidi(totalInp, hiddenMidi) 
         #lstmOutRhythm, hiddenOutRhythm = self.LstmRhythm(inputRhythmLstm, hiddenRhythm) 
 

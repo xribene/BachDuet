@@ -8,45 +8,33 @@ python main.py
 """
 
 # pyQt5 imports
-from PyQt5 import QtGui, QtCore, QtSvg
-from PyQt5.QtWidgets import (QMainWindow, QApplication, QCheckBox, QComboBox, QDateTimeEdit,QMessageBox,
-        QDial, QDialog, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit,
-        QProgressBar, QPushButton, QRadioButton, QScrollBar, QSizePolicy,
-        QSlider, QSpinBox, QStyleFactory, QTableWidget, QTabWidget, QTextEdit, QSplashScreen,
-        QVBoxLayout, QWidget,QLCDNumber, QDoubleSpinBox,QGraphicsItem, QGraphicsItemGroup, QGraphicsEllipseItem, QGraphicsObject, QGraphicsLineItem,
-                         QGraphicsScene, QGraphicsView, QStyle, QWidget, QLabel, QHBoxLayout, QMenuBar, QTextEdit, QGridLayout, QAction, QActionGroup, QToolBar, QToolBox, QToolButton)
-from PyQt5.QtCore import QObject, pyqtSignal, QTimer, Qt, pyqtSlot, QThread, QPointF, QRectF, QLineF, QRect
-from PyQt5.QtGui import (QPen, QTransform, QPixmap)
-from PyQt5.QtSvg import QGraphicsSvgItem
-import pyqtgraph as pg
+from PyQt5 import QtGui
+from PyQt5.QtWidgets import (QApplication, QComboBox, QMessageBox,
+        QGridLayout, QGroupBox, QLabel, QStyleFactory, QSplashScreen,
+        QWidget, QWidget, QLabel, QGridLayout)
+from PyQt5.QtCore import pyqtSignal, Qt, pyqtSlot, QThread
+from PyQt5.QtGui import QPixmap
 from pyqtgraph.Qt import QtGui
 # python imports
 import logging
 import logging.config
-from collections import deque,  OrderedDict, defaultdict
+from collections import defaultdict
 from queue import Queue
-import time, threading
+import time
 import sys
-import argparse
-import random
 import rtmidi
 from datetime import datetime
 from functools import partial
 import numpy as np
 from pathlib import Path
 import pickle
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-from torch.nn.utils import weight_norm
-import torch.optim as optim 
 import sys
 # custom imports
 from GuiClasses.MidiReader import MidiKeyboardReaderAsync, MidiReaderSync
-from GuiClasses.Timers import Clock, Metronome, TempoEstimator
+from GuiClasses.Timers import Clock, Metronome
 from GuiClasses.NeuralNetworkIsmir import NeuralNetSync, NeuralNet
-from GuiClasses.AudioRecording2 import Audio2MidiEvents, AudioRecorder
-from GuiClasses.PitchEstimators import YinEstimator, CrepeEstimator
+# from GuiClasses.AudioRecording2 import Audio2MidiEvents, AudioRecorder
+# from GuiClasses.PitchEstimators import YinEstimator, CrepeEstimator
 from GuiClasses.StaffItem import Staff
 from GuiClasses.StaffPainter import StaffPainter
 from GuiClasses.StaffView import StaffView
@@ -62,9 +50,8 @@ from GuiClasses.PianoRollPainter import PianoRollPainter
 from GuiClasses.Memory import Memory
 from GuiClasses.InputDialog import InputDialog
 from keyMapping import ddd as KeyMappings
-from ParsingClasses import RhythmTemplate
-from utils import Params, TensorBuffer, rename
-from ParsingClasses import Vocabulary
+# from ParsingClasses import RhythmTemplate
+from utils import Params
 
 
 class ApplicationContext(object):

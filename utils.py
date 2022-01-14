@@ -2,18 +2,15 @@
 """
 Created on Tue Nov 20 02:32:34 2018
 
-@author: faidra
+@author: xribene
 """
 import json
 import torch
 import numpy as np
 from ParsingClasses import Part, TimeSignature, Duet, Piece, RhythmTemplate
-from ParsingClasses import Note as Note2# from music21 import stream , instrument, note, duration, clef, layout, metadata
-# from visdom import Visdom
+from ParsingClasses import Note as Note2
 from pathlib import Path
 import pickle
-# from music21 import *
-# import matplotlib.pyplot as plt
 
 def part2Tensor(part,vocabMidiArticGlobal,vocabRhythmGlobal):
     partTensor = torch.zeros((len(part.noteList),4))

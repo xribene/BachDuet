@@ -12,9 +12,9 @@
 
 
 ## Links
-Webpage / Demos :  http://www2.ece.rochester.edu/projects/air/projects/BachDuet.html
+- Webpage / Demos :  http://www2.ece.rochester.edu/projects/air/projects/BachDuet.html
 
-Paper : https://www.nime.org/proceedings/2020/nime2020_paper125.pdf
+- Paper : https://www.nime.org/proceedings/2020/nime2020_paper125.pdf
 
 
 

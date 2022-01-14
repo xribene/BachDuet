@@ -1,0 +1,33 @@
+certifi==2021.10.8
+chardet @ file:///home/conda/feedstock_root/build_artifacts/chardet_1635814844635/work
+cycler @ file:///home/conda/feedstock_root/build_artifacts/cycler_1635519461629/work
+fonttools @ file:///home/conda/feedstock_root/build_artifacts/fonttools_1639926289913/work
+importlib-metadata @ file:///home/conda/feedstock_root/build_artifacts/importlib-metadata_1639976142852/work
+joblib @ file:///home/conda/feedstock_root/build_artifacts/joblib_1633637554808/work
+jsonpickle @ file:///home/conda/feedstock_root/build_artifacts/jsonpickle_1618250231429/work
+kiwisolver @ file:///home/conda/feedstock_root/build_artifacts/kiwisolver_1635836691365/work
+matplotlib @ file:///home/conda/feedstock_root/build_artifacts/matplotlib-suite_1639358987786/work
+mkl-fft==1.3.1
+mkl-random @ file:///tmp/build/80754af9/mkl_random_1626186064646/work
+mkl-service==2.4.0
+more-itertools @ file:///home/conda/feedstock_root/build_artifacts/more-itertools_1637732846337/work
+munkres==1.1.4
+music21 @ file:///home/conda/feedstock_root/build_artifacts/music21_1638626077373/work
+numpy @ file:///tmp/build/80754af9/numpy_and_numpy_base_1634095647912/work
+olefile @ file:///home/conda/feedstock_root/build_artifacts/olefile_1602866521163/work
+packaging @ file:///home/conda/feedstock_root/build_artifacts/packaging_1637239678211/work
+Pillow @ file:///home/conda/feedstock_root/build_artifacts/pillow_1636558800772/work
+pyparsing @ file:///home/conda/feedstock_root/build_artifacts/pyparsing_1636757021002/work
+PyQt5==5.12.3
+PyQt5_sip==4.19.18
+PyQtChart==5.12
+pyqtgraph @ file:///home/conda/feedstock_root/build_artifacts/pyqtgraph_1633968630058/work
+PyQtWebEngine==5.12.1
+python-dateutil @ file:///home/conda/feedstock_root/build_artifacts/python-dateutil_1626286286081/work
+python-rtmidi==1.4.9
+six @ file:///home/conda/feedstock_root/build_artifacts/six_1620240208055/work
+torch==1.8.2
+typing-extensions @ file:///tmp/build/80754af9/typing_extensions_1631814937681/work
+unicodedata2 @ file:///home/conda/feedstock_root/build_artifacts/unicodedata2_1640031007814/work
+webcolors @ file:///home/conda/feedstock_root/build_artifacts/webcolors_1606181549448/work
+zipp @ file:///home/conda/feedstock_root/build_artifacts/zipp_1641731510635/work

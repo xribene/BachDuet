@@ -1,23 +1,11 @@
-from PyQt5 import QtGui, QtCore
-from PyQt5.QtWidgets import (QApplication, QCheckBox, QComboBox, QDateTimeEdit,
-        QDial, QDialog, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit,
-        QProgressBar, QPushButton, QRadioButton, QScrollBar, QSizePolicy,
-        QSlider, QSpinBox, QStyleFactory, QTableWidget, QTabWidget, QTextEdit,
-        QVBoxLayout, QWidget,QLCDNumber, QDoubleSpinBox)
-from PyQt5.QtCore import QObject, pyqtSignal, QTimer, Qt, pyqtSlot, QThread
-from utils import Params, TensorBuffer, rename, midi2Tensor
-from ParsingClasses import Vocabulary
+from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
+from utils import Params, TensorBuffer
 import pickle, time
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
-from torch.nn.utils import weight_norm
-import torch.optim as optim 
-from pathlib import Path
 
 from Models.LstmMidiOnly import Model as ModelMidi
 from Models.LstmKeyOnlySkipCond import Model as ModelKey
-import json
 from collections import deque
 
 class NeuralNet(QObject):  
@@ -90,7 +78,7 @@ class NeuralNet(QObject):
         self.modelKey = ModelKey(dropoutKey=argsKey.dropoutKey, 
                             numLayersKeyLSTM=argsKey.lstmLayersKey, hiddenSizeKey=argsKey.hiddenSizeKey,
                             vocabSizeKey = 24, embSizeKeys = 25, includeKeys = 0, initKeys = 0,
-                            initHiddenZeros = 0)#argsKey.initHiddenZeros)
+                            initHiddenZeros = 1)#argsKey.initHiddenZeros)
         self.i = 0
         self.modelMidi.to(self.device)   
         self.modelKey.to(self.device)
@@ -245,10 +233,14 @@ class NeuralNet(QObject):
             #### fill the newNextElement and push it to the TensorBuffer
             # I want to enable useCondition only when its time.
             ###
+            # print(f"midi ind {currentKeyTokenInd} cpc ind {currentKeyPitchClassIndex} rhythm Ind {currentRhythmInd}")
             #assert prevPredictionTokenIndex[2]
             self.tensorBuffer.push([self.prevPredictionTokenIndex,currentKeyTokenInd])
             self.tensorBufferPC.push([self.prevPredictionTokenIndexPC, currentKeyPitchClassIndex])
             self.tensorBufferKey.push([self.prevPredictionTokenIndexKey])
+            print(f"midiArtic inds {[self.prevPredictionTokenIndex,currentKeyTokenInd]}")
+            print(f"cpc inds {[self.prevPredictionTokenIndexPC, currentKeyPitchClassIndex]}")
+            print(f"rhythm inds {currentRhythmInd}")
             #print(f" {self.prevPredictionTokenIndex.shape}")
             #print(f" {torch.cat((self.hiddenMidi[0][0,0,:],self.hiddenMidi[0][1,0,:]),dim=0).unsqueeze(0).shape}")
             #print(f"{srsrvrs}")
@@ -340,7 +332,8 @@ class NeuralNet(QObject):
                 "artic":  int(predictedHit),
                 "tick": currentKeyTick+1,
                 "rhythmToken": None,
-                "logits" : predictedLogits
+                "logits" : predictedLogits,
+                "softmax" : output_dist
             }
             self.currentDnnNote.put(output)
 

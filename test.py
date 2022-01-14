@@ -39,7 +39,7 @@ class BachDuet(QWidget):
         self.appctxt = appctxt
         self.ctrlPressed = False
         self.params = self.config.default
-        seed = None
+        seed = 11
         # notesPainterDict is used for displaying the notes on the Staves,
         # and it contains all the information about each notes position in the Staff
         # as well as their spellin given different key configurations.
@@ -57,21 +57,29 @@ class BachDuet(QWidget):
                         self.notesDict, self.appctxt, 
                         parentPlayer = self.player1, parent = self, seed=seed)
 
-        self.keyEvents = ['72_1', '72_0','74_1', '74_0']*4
+        self.midis = [72,72,74,74]*4
+        self.artics = [1,0,1,0]*4
+        self.keyEvents = [str(self.midis[i])+'_'+str(self.artics[i]) for i in range(len(self.midis))]
         self.store = {
             'hiddenStates' : [],
             'logits' : [],
-            'midiArtic' : [],
+            'softmax' : [],
+            'aiMidiArtic' : [],
             'seed' : seed,
-            'type' : 'zero'
+            'type' : 'zero',
+            'keyEvents' : self.keyEvents,
+            'tick' : [],
+            'rhythmToken' : [],
+            "temperature" : self.player1.temperature
+
         }
-        self.store['hiddenStates'].append(self.neuralNet.hiddenMidi)
+        self.store['hiddenStates'].append([self.neuralNet.hiddenMidi[0].numpy(), self.neuralNet.hiddenMidi[1].numpy()])
         # print(torch.sum(self.neuralNet.hiddenMidi[1]))
         self.runTest()
 
     def runTest(self):
 
-        for i in range(16):
+        for i in range(len(self.keyEvents)):
             
             currentTrigger = self.clock.singleRun()
 
@@ -82,22 +90,53 @@ class BachDuet(QWidget):
                 'rhythmToken' : currentTrigger['rhythmToken'],
                 'globalTick' : currentTrigger['globalTick']
             }
-
+            
             self.neuralNet.forwardPass(humanInp)
             pred = self.outputQueue.get()
             # print(torch.mean(pred['logits']))
 
             # print(pred.keys())
-            self.store['hiddenStates'].append(self.neuralNet.hiddenMidi)
-            self.store['logits'].append(pred['logits'])
-            self.store['midiArtic'].append(f"{pred['midi']}_{pred['artic']}")
+            self.store['hiddenStates'].append([self.neuralNet.hiddenMidi[0].numpy(), self.neuralNet.hiddenMidi[1].numpy()])
+            self.store['logits'].append(pred['logits'].numpy())
+            self.store['softmax'].append(pred['softmax'].numpy())
+            self.store['aiMidiArtic'].append(f"{pred['midi']}_{pred['artic']}")
+            self.store['rhythmToken'].append(currentTrigger['rhythmToken'])
+            self.store['tick'].append(int(currentTrigger['tick']))
 
             # print(list(self.outputQueue.queue))
             # print(currentTrigger)
-        with open(f"bachDuetTest_rand.dict", 'wb') as f :
-            pickle.dump(self.store, f)
-        print([torch.mean(x) for x in self.store['logits']])
-        print([x for x in self.store['midiArtic']])
+        self.store['rhythmInd'] = [self.neuralNet.vocabRhythmGlobal.token2index[x] for x in self.store['rhythmToken']]
+        self.store['aiMidiArticInd'] = [self.neuralNet.vocabMidiArticGlobal.token2index[x] for x in self.store['aiMidiArtic']]
+        self.store['humanMidiArticInd'] = [self.neuralNet.vocabMidiArticGlobal.token2index[x] for x in self.store['keyEvents']]
+        self.store['humanMidiArtic'] = [x for x in self.store['keyEvents']]
+        self.store['humanCpc'] = [int(self.neuralNet.notesDict[x]['primary']['cpc']) if x!=0 else 12 for x in self.midis]
+
+        self.store['humanMidi'] = self.midis
+        self.store['aiMidi'] = [int(x.split("_")[0]) for x in self.store["aiMidiArtic"]]
+        self.store['aiCpc'] = [int(self.neuralNet.notesDict[x]['primary']['cpc']) if x!=0 else 12 for x in self.store['aiMidi']]
+
+
+        # with open(f"/home/xribene/Projects/BachDuet-WebGUI/public/bachDuetTest.dict", 'wb') as f :
+        #     pickle.dump(self.store, f)
+        np.save(f"/home/xribene/Projects/BachDuet-WebGUI/public/bachDuetTest.npy", self.store)
+        print([np.mean(x) for x in self.store['logits']])
+        print([x for x in self.store['humanMidiArtic']])
+        print([x for x in self.store['humanMidiArticInd']])
+        print([x for x in self.store['aiMidiArtic']])
+        print([x for x in self.store['aiMidiArticInd']])
+        print([x for x in self.store['aiMidi']])
+        print([x for x in self.store['aiCpc']])
+        # print([x for x in self.store['rhythmToken']])
+        # print([x for x in self.store['rhythmInd']])
+        # print([x for x in self.store['humanCpc']])
+        for i in range(17):
+            print([np.mean(x) for x in self.store['hiddenStates'][i][0]])
+            print([np.mean(x) for x in self.store['hiddenStates'][i][1]])
+            # print([np.mean(x) for x in self.store['hiddenStates'][1][0]])
+            # print([np.mean(x) for x in self.store['hiddenStates'][1][1]])
+            # print([np.mean(x) for x in self.store['hiddenStates'][2][0]])
+            # print([np.mean(x) for x in self.store['hiddenStates'][2][1]])
+
 
 if __name__ == '__main__':
     logger = None # configure_logger('default')
