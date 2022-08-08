@@ -2,21 +2,15 @@
 <img src="https://github.com/xribene/BachDuet/blob/master/resources/base/Images/bachDuetSplashYellow1024.png?raw=true" width="40%">
 
 # BachDuet
-<table>
-<tr>
-<td>
-  BachDuet enables a human performer to improvise a duet counterpoint with a computer agent in real time. 
-</td>
-</tr>
-</table>
 
+BachDuet enables a human performer to improvise a duet counterpoint with a computer agent in real time. 
 
-## Links
-Webpage / Demos :  http://www2.ece.rochester.edu/projects/air/projects/BachDuet.html
+[Webpage / Demos](http://www2.ece.rochester.edu/projects/air/projects/BachDuet.html)
 
-Paper : https://www.nime.org/proceedings/2020/nime2020_paper125.pdf
+[Paper](https://www.nime.org/proceedings/2020/nime2020_paper125.pdf)
 
-
+## **NEW** Version
+Check the [code](https://github.com/mrmrmrfinch/BachDuet-WebGUI) of a recent implementation of BachDuet using Vue.js and visit [bachduet.com](http://www.bachduet.com) to itneract with BachDuet  
 
 ## Usage
 ### Requirements
@@ -44,12 +38,4 @@ Paper : https://www.nime.org/proceedings/2020/nime2020_paper125.pdf
 
 
 ## Bugs
-### Major
-- 
-### Minor
 - "MachineVsMachine" mode not working correctly
-
-## TODO
-- Clean library depedencies
-- Clean and add documentation on the remaining code
-- Embed a synthesizer using the FluidSynth API for python
